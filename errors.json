@@ -1,0 +1,64 @@
+{
+  "Errors": {
+    "Linguistic": {
+      "_description": "Linguistic errors in generated text",
+      "errors": {
+        "Format": {
+          "_description": "Are there formatting errors in the generated text?",
+          "_examples": [
+            "indentation",
+            "inconsistencies",
+            "date format errors"
+          ]
+        },
+        "Grammar": {
+          "_description": "Does the generated text differ from expected text in grammar only?",
+          "_examples": [
+            "capitalization",
+            "spelling"
+          ]
+        },
+        "Concision": {
+          "_description": "Is the generated answer verbose?",
+          "_examples": []
+        },
+        "Completeness" : {
+          "_description": "Is the generated answer missing important information?",
+          "_examples": [
+            "lacking units after integers"
+          ]
+        },
+        "Specificity": {
+          "_description": "Is the answer not specific enough? Too specific?",
+          "_examples": [
+            "expected answer is the sum of the generated answer",
+            "date specificity",
+            "lacking an article"
+          ]
+        }
+      }
+
+    },
+    "Model": {
+      "_description": "Model-related errors",
+      "errors": {
+        "Bugs": {
+          "_description": "Does the generated text return obvious bugs in the code?",
+          "_examples": [
+            "junk code",
+            "major calculation errors",
+            "token limit reached (incomplete answer)",
+            "no answer/blank",
+            "mismatching expected text vs generated text data types"
+          ]
+        },
+        "Incorrect Eval": {
+          "_description": "Did the model simply give the wrong answer?",
+          "_examples": [
+            "chose wrong answer choice from (A, B, C, D)"
+          ]
+        }
+      }
+    }
+  }
+}
