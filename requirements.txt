@@ -1,0 +1,6 @@
+python>=3.11
+streamlit
+pandas>1.0
+numpy
+json
+openai
