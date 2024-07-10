@@ -12,14 +12,14 @@ To run this project, you need to set up your API keys and other configuration se
    cp config.example.yaml config.yaml
 
 2. **Edit the Configuration File**
+
    In `config.yaml`, replace placeholder values with your actual API keys and other sensitive information.
 
 3. **IMPORTANT: Add to .gitignore**
+
    Secure your information by making sure `config.yaml` is added to `.gitignore` to avoid accidentally committing your API key.
 
 **Handle Configuration in Code**
-
-**Example using YAML**:
 
 ```python
 import yaml
@@ -30,4 +30,3 @@ def load_config():
 
 config = load_config()
 api_key = config.get('api_key')
-database_url = config.get('database_url')
