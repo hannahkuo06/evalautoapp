@@ -1,0 +1,15 @@
+﻿id,expected_text,generated_text,inputs_pretokenized,response_code,exact_match,prefix_exact_match,quasi_exact_match,quasi_prefix_exact_match,contains_match,runspec,model,model_internal_name,runspec_internal_name,f1-macro,f1-micro
+0,A,A,"What color is the sky?
+
+A. blue
+B. green
+C. red 
+D. purple",200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,
+1,2,3,What is 1 + 1?,200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,
+2,Sacramento,Yes,What is the capital of California?,200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,
+3,C,B,"What animal does not live in the ocean?
+
+A. dolphin
+B. turtle
+C. elephant 
+D. whale",200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,
