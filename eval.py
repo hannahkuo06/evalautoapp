@@ -1,8 +1,8 @@
 import functools
-import yaml
 import pandas as pd
 import json
-import multiprocessing
+import yaml
+# import multiprocessing
 
 from openai import AzureOpenAI
 from io import BytesIO
@@ -34,7 +34,7 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(prompt, temperature=0.3, max_tokens=100, top_k=50):
+def predict_openai(prompt, temperature=0.3, max_tokens=1500, top_k=50):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
