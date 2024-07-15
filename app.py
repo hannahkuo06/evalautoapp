@@ -17,7 +17,9 @@ def download_df(df, filename):
 
 
 def main():
-    st.set_page_config(page_title="Evaluation Automation", page_icon=":chart_with_upwards_trend:")
+    st.set_page_config(page_title="Evaluation Automation",
+                       page_icon=":chart_with_upwards_trend:",
+                       layout="wide")
     st.header("Linguistic Error-checking Automation")
 
     st.markdown("### About")
