@@ -2,7 +2,7 @@ import functools
 import pandas as pd
 import json
 import yaml
-# import multiprocessing
+from multiprocessing import Pool
 
 from openai import AzureOpenAI
 from io import BytesIO
@@ -34,7 +34,7 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(prompt, temperature=0.3, max_tokens=1500, top_k=50):
+def predict_openai(prompt, temperature=0.3, max_tokens=100, top_k=50):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
@@ -109,11 +109,29 @@ def parse_taxonomy(input, generated_text, expected_text):
 
     return err_lst
 
+# @functools.lru_cache(maxsize=None)
+def process(row):
+    resp_type = response_type_check(row)
+    ec = error_check(row, resp_type)
+    return str(ec)
+
+
+def parallelize(file_bytes, num_processes=10):
+    with Pool(num_processes) as pool:
+        df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+        results = pool.map(process, [row for _, row in df.iterrows()])
+
+    df['Errors'] = results
+    return df
+
 
 @functools.lru_cache(maxsize=None)
 def analyze(file_bytes):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
     df['Errors'] = None
+
+    # with Pool(3) as pool:
+    #     result = pool.map()
 
     for _, row in df.iterrows():
         resp_type = response_type_check(row)
