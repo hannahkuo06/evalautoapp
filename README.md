@@ -1,5 +1,11 @@
 # evalautoapp
 
+## About
+This tool is meant to automate the error-checking process in data evaluation. It will process a runspec CSV and output the same CSV file with an extra column \"Errors\" that includes a list of errors/bugs GPT4 found in the generated text.
+\n\n
+`errors.json` is a dynamic error taxonomy. Update with new errors for GPT4 to label and catch during data evaluation.
+
+
 ## Configuration
 
 To run this project, you need to set up your API keys and other configuration settings.
