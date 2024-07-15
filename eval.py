@@ -8,17 +8,17 @@ from openai import AzureOpenAI
 from io import BytesIO
 
 
-def load_config():
-    with open('config.yaml', 'r') as file:
-        return yaml.safe_load(file)
+# def load_config():
+#     with open('config.yaml', 'r') as file:
+#         return yaml.safe_load(file)
 
 
-config = load_config()
-api_key = config.get('api_key')
+# config = load_config()
+# api_key = config.get('api_key')
 
 client = AzureOpenAI(
     azure_endpoint="https://core-llm-1.openai.azure.com/",
-    api_key=api_key,
+    api_key="1456d60bb6864ed99bd5cc4858ed75a8",
     api_version="2024-02-15-preview",
 )
 
