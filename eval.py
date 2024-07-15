@@ -110,16 +110,28 @@ def parse_taxonomy(input, generated_text, expected_text):
     return err_lst
 
 # @functools.lru_cache(maxsize=None)
-def process(row):
+def process_row(row):
     resp_type = response_type_check(row)
     ec = error_check(row, resp_type)
     return str(ec)
 
+def process_batch(batch):
+    results = []
+    for _, row in batch.iterrows():
+        processed = process_row(row)
+        results.append(processed)
+    return results
 
-def parallelize(file_bytes, num_processes=10):
+
+def parallelize(file_bytes, num_processes=4):
+    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+    chunk_size = len(df) // num_processes
+    chunks = [df.iloc[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
+
     with Pool(num_processes) as pool:
-        df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-        results = pool.map(process, [row for _, row in df.iterrows()])
+        results = pool.map(process_batch, chunks)
+
+    results = [item for sublist in results for item in sublist]
 
     df['Errors'] = results
     return df
