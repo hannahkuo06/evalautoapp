@@ -137,16 +137,16 @@ def parallelize(file_bytes, num_processes=4):
     return df
 
 
-@functools.lru_cache(maxsize=None)
-def analyze(file_bytes):
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-    df['Errors'] = None
-
-    # with Pool(3) as pool:
-    #     result = pool.map()
-
-    for _, row in df.iterrows():
-        resp_type = response_type_check(row)
-        ec = error_check(row, resp_type)
-        df.loc[df['id'] == row['id'], 'Errors'] = str(ec)
-    return df
+# @functools.lru_cache(maxsize=None)
+# def analyze(file_bytes):
+#     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+#     df['Errors'] = None
+#
+#     # with Pool(3) as pool:
+#     #     result = pool.map()
+#
+#     for _, row in df.iterrows():
+#         resp_type = response_type_check(row)
+#         ec = error_check(row, resp_type)
+#         df.loc[df['id'] == row['id'], 'Errors'] = str(ec)
+#     return df
