@@ -17,7 +17,7 @@ class TestResponse(unittest.TestCase):
     def test_response_simple(self):
         df = pd.read_csv('data/mcq_10.csv')
         rec = df.iloc[0]
-        check = eval.response_type_check(rec)
+        check = eval.response_type(rec)
         print(check)
         self.assertIn("single letter", check)
 
@@ -26,7 +26,7 @@ class TestResponse(unittest.TestCase):
         # metrics = ["exact_match"]
         df = pd.read_csv('data/mcq_neg_10.csv')
         record = df.iloc[5]
-        check = eval.response_type_check(record)
+        check = eval.response_type(record)
         print(check)
         self.assertIn("single letter", check)
 
@@ -40,28 +40,37 @@ class TestError(unittest.TestCase):
     def test_response_error_good(self):
         df = pd.read_csv('data/mcq_10.csv')
         rec = df.iloc[0]
-        check = eval.response_type_check(rec)
+        check = eval.response_type(rec)
         print(check)
-        response = eval.error_check(rec, check)
-        print(response)
-        self.assertIn("Good", response)
+        tag, justification = eval.error_check(rec, check)
+        print(tag, justification)
+        self.assertIn("Good", tag)
+        self.assertIn("1. Yes", justification)
+        self.assertIn("2. Yes", justification)
 
     """TODO: debug"""
 
     def test_response_error(self):
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[5]
-        check = eval.response_type_check(rec)
+        check = eval.response_type(rec)
         print(check)
-        tags, response = eval.error_check(rec, check)
-        print(tags, response)
-        # self.assertIn(['Bugs'], response)
-        self.assertTrue(True)
+        self.assertIn("multiple-choice", check)
+        # self.assertIn("letter", check)
+
+        tag, response = eval.error_check(rec, check)
+        print(tag, response)
+        self.assertEqual(['Bugs'], tag)
+
+        # checks that generated text was a letter (even if expected text is a number)
+        self.assertIn("1. Yes", response)
+        self.assertIn("2. No", response)
+        # self.assertTrue(True)
 
     def test_error_neg(self):
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[0]
-        check = eval.response_type_check(rec)
+        check = eval.response_type(rec)
         print(check)
         response = eval.error_check(rec, check)
         print(response)
