@@ -9,6 +9,10 @@ st.markdown("This tool is meant to automate the error-checking process in data e
             "found during data evaluation. This way, we can manually include new errors for GPT4"
             "to keep an eye out for in the data for more accurate/detailed error-checking.")
 
+# description of algorithm
+# description of runspecs
+
+st.markdown('### Goal')
 st.markdown('### Processing')
 # include example df here
 
