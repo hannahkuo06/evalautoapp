@@ -51,12 +51,6 @@
             "no answer/blank",
             "mismatching expected text vs generated text data types"
           ]
-        },
-        "Incorrect Eval": {
-          "_description": "Did the model simply give the wrong answer?",
-          "_examples": [
-            "chose wrong answer choice from (A, B, C, D)"
-          ]
         }
       }
     }
