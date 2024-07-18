@@ -17,7 +17,6 @@ def download_df(df, filename):
 
 
 def main():
-
     st.markdown("### Instructions")
     st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the processed csv")
 

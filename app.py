@@ -8,24 +8,16 @@ st.set_page_config(page_title="Evaluation Automation",
                    initial_sidebar_state="expanded")
 
 st.header("Linguistic Error-checking Automation")
-st.markdown("### About")
-st.markdown("This tool is meant to automate the error-checking process in data evaluation. "
-            "It will process a runspec CSV and output the same CSV file with an extra column "
-            "\"Errors\" that includes a list of errors/bugs GPT4 found in the generated text."
-            "\n\n"
-            "There is an editable JSON file that creates a hierarchy of errors that are commonly"
-            "found during data evaluation. This way, we can manually include new errors for GPT4"
-            "to keep an eye out for in the data for more accurate/detailed error-checking.")
-
 st.sidebar.title("Navigation")
 pages = {
-    "Documentation": "pages/homepage.py",
-    "Upload File and Process": "pages/processor.py",
+    "Documentation": "homepage.py",
+    "Upload File and Process": "processor.py",
 }
 
 selection = st.sidebar.radio("Go to", list(pages.keys()))
 
 page = pages[selection]
+
 
 with open(page) as f:
     code = f.read()
