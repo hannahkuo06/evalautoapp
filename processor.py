@@ -3,7 +3,7 @@ import base64
 import eval
 
 
-st.markdown("### Instructions")
+st.markdown("#### Instructions")
 # note to download a csv
 st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the processed csv")
 
@@ -24,11 +24,12 @@ def download_df(df, filename):
 def main():
     uploaded_file = st.file_uploader("Choose a file", type=["csv"], accept_multiple_files=False)
 
-    if st.button("Process"):
+    if st.button("Process") and uploaded_file is not None:
         df = process(uploaded_file)
         st.markdown("---")
         st.write("Evaluation complete!")
-        st.dataframe(df)
+        # print(type(df))
+        st.write(df)
 
         # st.sidebar.title('Filter options')
         # st.sidebar.header('Metrics')

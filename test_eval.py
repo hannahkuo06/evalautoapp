@@ -12,6 +12,7 @@ class TestEvalBasic(unittest.TestCase):
         first = negs.iloc[0]
         self.assertEqual(first["id"], 4)
 
+
 class TestResponse(unittest.TestCase):
     def test_response_simple(self):
         df = pd.read_csv('data/mcq_10.csv')
@@ -29,9 +30,11 @@ class TestResponse(unittest.TestCase):
         print(check)
         self.assertIn("single letter", check)
 
-    # TODO: SAQ tests
+    """TODO: SAQ tests"""
+
     def test_response_saq(self):
         self.assertTrue(True)
+
 
 class TestError(unittest.TestCase):
     def test_response_error_good(self):
@@ -43,14 +46,15 @@ class TestError(unittest.TestCase):
         print(response)
         self.assertIn("Good", response)
 
-    # TODO: debug
+    """TODO: debug"""
+
     def test_response_error(self):
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[5]
         check = eval.response_type_check(rec)
         print(check)
-        response = eval.error_check(rec, check)
-        print(response)
+        tags, response = eval.error_check(rec, check)
+        print(tags, response)
         # self.assertIn(['Bugs'], response)
         self.assertTrue(True)
 
@@ -61,15 +65,17 @@ class TestError(unittest.TestCase):
         print(check)
         response = eval.error_check(rec, check)
         print(response)
-        self.assertNotEquals('Good', response)
+        self.assertNotEqual('Good', response)
 
-    # TODO: SAQ tests
+    """TODO: SAQ tests"""
+
     def test_error_saq(self):
         self.assertTrue(True)
 
 
+class TestProcesses(unittest.TestCase):
+    """TODO: tests for process_row and process_batch"""""
 
 
 if __name__ == '__main__':
     unittest.main()
-

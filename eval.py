@@ -5,8 +5,7 @@ import yaml
 from multiprocessing import Pool
 
 from openai import AzureOpenAI
-from io import BytesIO
-
+from io import BytesIO, StringIO
 
 # def load_config():
 #     with open('config.yaml', 'r') as file:
@@ -77,13 +76,15 @@ def error_check(record, type_check):
     response = predict_openai(prompt)
 
     if "1. Yes" in response and "2. Yes" in response:
-        return "Good"
+        return "Good", response
     else:
         errors = parse_taxonomy(response, record['generated_text'], record['expected_text'])
         if errors is []:
-            return "Other"
+            return "Other", response
         else:
-            return errors
+            return errors, [response]
+
+    # return response
 
 
 def parse_taxonomy(input, generated_text, expected_text):
@@ -109,33 +110,59 @@ def parse_taxonomy(input, generated_text, expected_text):
 
     return err_lst
 
+
 # @functools.lru_cache(maxsize=None)
 def process_row(row):
     resp_type = response_type_check(row)
-    ec = error_check(row, resp_type)
-    return str(ec)
+    tag, justification = error_check(row, resp_type)
+    return tag, justification
+
 
 def process_batch(batch):
-    results = []
+    tags = []
+    justifications = []
     for _, row in batch.iterrows():
-        processed = process_row(row)
-        results.append(processed)
-    return results
+        tag, justification = process_row(row)
+        tags.append(tag)
+        justifications.append(justification)
+    # print(tags)
+    return tags, justifications
+
+
+def add_col(df, col_name, values):
+    # print(values)
+    df[col_name] = values
+    return df
 
 
 def parallelize(file_bytes, num_processes=4):
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+    file_string = file_bytes.decode('utf-8')
+    data = StringIO(file_string)
+    df = pd.read_csv(data)
+    # df = pd.read_csv(BytesIO(file_bytes), index_col=None)
     chunk_size = len(df) // num_processes
     chunks = [df.iloc[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
 
     with Pool(num_processes) as pool:
         results = pool.map(process_batch, chunks)
+        print(results)
 
-    results = [item for sublist in results for item in sublist]
+        tags = []
+        justifications = []
 
-    df['Errors'] = results
+        for tag, justification in results:
+            # print(tag)
+            tags.append(tag)
+            justifications.append(justification)
+
+    # results = [item for sublist in tags for item in sublist]
+
+    df = add_col(df, 'Errors', tags)
+    df = add_col(df, 'Justifications', justifications)
+    # df['Errors'] = tags
+    # # print(justification)
+    # df['Justifications'] = justifications
     return df
-
 
 # @functools.lru_cache(maxsize=None)
 # def analyze(file_bytes):

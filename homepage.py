@@ -12,8 +12,8 @@ st.markdown("This tool is meant to automate the error-checking process in data e
 # description of algorithm
 # description of runspecs
 
-st.markdown('### Goal')
-st.markdown('### Processing')
+st.markdown('#### Goal')
+st.markdown('#### Processing')
 # include example df here
 
-st.markdown('### Error Tags')
+st.markdown('#### Error Tags')
