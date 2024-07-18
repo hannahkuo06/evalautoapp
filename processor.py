@@ -3,6 +3,11 @@ import base64
 import eval
 
 
+st.markdown("### Instructions")
+# note to download a csv
+st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the processed csv")
+
+
 @st.cache_data
 def process(file):
     content_bytes = file.read()
@@ -17,9 +22,6 @@ def download_df(df, filename):
 
 
 def main():
-    st.markdown("### Instructions")
-    st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the processed csv")
-
     uploaded_file = st.file_uploader("Choose a file", type=["csv"], accept_multiple_files=False)
 
     if st.button("Process"):
