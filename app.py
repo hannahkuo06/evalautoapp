@@ -7,48 +7,23 @@ st.set_page_config(page_title="Evaluation Automation",
                    layout="wide",
                    initial_sidebar_state="expanded")
 
-# st.sidebar.title("Navigation")
-# pages = {
-#     "Documentation": "homepage.py",
-#     "Upload File and Process": "processor.py",
-# }
+st.title('EvalAutoApp')
+st.subheader('Automated Runspec Error-Checking in Data Evaluation')
 
-# st.markdown(
-#     """
-#     <div class="navbar">
-#         <button onclick="location.href='#home'">Home</button>
-#         <button onclick="location.href='#upload'">Upload File</button>
-#         <button onclick="location.href='#page3'">Page 3</button>
-#     </div>
-#     """,
-#     unsafe_allow_html=True
-# )
+st.sidebar.title("Navigation")
+pages = {
+    "Documentation": "homepage.py",
+    "Upload File and Process": "processor.py",
+}
 
-# Create layout for the main content
-home_col, upload_col = st.columns([1, 1])
+selection = st.sidebar.radio("Go to", list(pages.keys()))
 
-with home_col:
-    if st.button("Home"):
-        import homepage
-
-with upload_col:
-    if st.button("Upload File"):
-        import processor
-
-# Default to Home
-import homepage
+page = pages[selection]
 
 
-st.header("Linguistic Error-checking Automation")
-
-# selection = st.sidebar.radio("Go to", list(pages.keys()))
-#
-# page = pages[selection]
-#
-#
-# with open(page) as f:
-#     code = f.read()
-#     exec(code)
+with open(page) as f:
+    code = f.read()
+    exec(code)
 
 # @st.cache_data
 # def process(file):
