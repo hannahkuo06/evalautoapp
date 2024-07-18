@@ -85,6 +85,17 @@ class TestError(unittest.TestCase):
 class TestProcesses(unittest.TestCase):
     """TODO: tests for process_row and process_batch"""""
 
+class TestConverse(unittest.TestCase):
+    def test_converse_wip(self):
+        df = pd.read_csv('data/mcq_neg_10.csv')
+        rec = df.iloc[5]
+
+        typing, check, answer = eval.converse(rec)
+        print(typing)
+        print(check)
+        print(answer)
+        self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()

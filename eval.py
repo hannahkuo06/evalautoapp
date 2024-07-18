@@ -170,29 +170,30 @@ def parallelize(file_bytes, num_processes=4):
     return df
 
 def converse(record):
-    with open('errors.json', 'r') as f:
-        taxonomy = json.load(f)
+    # with open('errors.json', 'r') as f:
+    #     taxonomy = json.load(f)
 
     type_q = f"What kind of question is this? What type of answer is it looking for? {[record['inputs_pretokenized']]}"
     type_a = predict_openai(type_q)
 
-    check_q = f"Is the generated answer of the same type as stated in: {type_a}? State why."
+    check_q = f"Is {record['generated_text']} of the same type as stated in: {type_a}? State why. "
     check_a = predict_openai(check_q)
 
-    answer_q = (f"Given this information, assess the accuracy of the generated text with expected text. State why."
-                f"{record['generated_text'], record['expected_text'], record['inputs_pretokenized']}")
+    answer_q = (f"Given this information, do generated and expected texts match? State why."
+                f"Generated:{record['generated_text']}, Expected: {record['expected_text']}, "
+                f"Context: {record['inputs_pretokenized']}")
     answer_a = predict_openai(answer_q)
 
-    for err_type, type_info in taxonomy['Errors'].items():
-        for err_name, err_info in type_info['errors'].items():
-            errors_q = (f"Prompt: {err_info['_description']},"
-                        f"Context: {[record['inputs_pretokenized']]},"
-                        f"Generated text: {record['generated_text']}"
-                      f"Expected text: {record['expected_text']},"
-                      f"Error: {err_name}\n")
-            errors_a = predict_openai(errors_q)
+    # for err_type, type_info in taxonomy['Errors'].items():
+    #     for err_name, err_info in type_info['errors'].items():
+    #         errors_q = (f"Prompt: {err_info['_description']},"
+    #                     f"Context: {[record['inputs_pretokenized']]},"
+    #                     f"Generated text: {record['generated_text']}"
+    #                   f"Expected text: {record['expected_text']},"
+    #                   f"Error: {err_name}\n")
+    #         errors_a = predict_openai(errors_q)
 
-    return
+    return type_a, check_a, answer_a
 
 
 # @functools.lru_cache(maxsize=None)
