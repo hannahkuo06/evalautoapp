@@ -90,11 +90,42 @@ class TestConverse(unittest.TestCase):
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[5]
 
-        typing, check, answer = eval.converse(rec)
-        print(typing)
-        print(check)
+        errs, answer = eval.converse(rec)
+        # print(typing)
+        # print(check)
+        print(errs)
         print(answer)
+        # self.assertIn("multiple-choice", typing)
+        # self.assertIn("Yes", check)
+        self.assertIn("Yes", answer)
+
+    """TODO: extensively test converse"""
+    def test_converse_typing(self):
         self.assertTrue(True)
+
+    def test_converse_type_checking(self):
+        self.assertTrue(True)
+
+    def test_converse_answer_check(self):
+        self.assertTrue(True)
+
+    def test_converse_error_check_careless(self):
+        df = pd.read_csv('data/mcq_neg_10.csv')
+        rec = df.iloc[0]
+
+        errs, answer = eval.converse(rec)
+        print(errs)
+        print(answer)
+        self.assertEqual(['Careless Mistake'], errs)
+        self.assertIn('Yes', answer[0])
+    def test_converse_error_check(self):
+        df = pd.read_csv('data/mcq_neg_10.csv')
+        rec = df.iloc[5]
+
+        errs, answer = eval.converse(rec)
+        print(errs)
+        print(answer)
+        self.assertEqual(['Bugs'], errs)
 
 
 if __name__ == '__main__':
