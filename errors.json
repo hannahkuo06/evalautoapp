@@ -51,6 +51,12 @@
             "no answer/blank",
             "mismatching expected text vs generated text data types"
           ]
+        },
+        "Careless Mistake": {
+          "_description": "Was there a small oversight when answering the question?",
+          "_examples": [
+            "choosing wrong MCQ answer"
+          ]
         }
       }
     }
