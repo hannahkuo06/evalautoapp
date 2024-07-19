@@ -187,9 +187,6 @@ def add_col(df, col_name, values):
 #     return justifications
 
 def parallelize2(file_bytes, num_processes=4):
-    # file_string = file_bytes.decode('utf-8')
-    # data = StringIO(file_string)
-    # df = pd.read_csv(data)
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
     # print(df)
     chunk_size = len(df) // num_processes
