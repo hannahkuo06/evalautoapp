@@ -20,10 +20,12 @@
         },
         "Concision": {
           "_description": "Is the generated answer verbose?",
-          "_examples": []
+          "_examples": [
+            "excessively long response"
+          ]
         },
         "Completeness" : {
-          "_description": "Is the generated answer missing important information?",
+          "_description": "Is the generated answer lacking important information?",
           "_examples": [
             "lacking units after integers"
           ]
@@ -43,19 +45,19 @@
       "_description": "Model-related errors",
       "errors": {
         "Bugs": {
-          "_description": "Does the generated text return obvious bugs in the code?",
+          "_description": "Is there a bug in the generated text and/or expected text?",
           "_examples": [
             "junk code",
             "major calculation errors",
             "token limit reached (incomplete answer)",
             "no answer/blank",
-            "mismatching expected text vs generated text data types"
+            "data type errors"
           ]
         },
-        "Careless Mistake": {
-          "_description": "Was there a small oversight when answering the question?",
+        "Incorrect": {
+          "_description": "Is the answer wrong?",
           "_examples": [
-            "choosing wrong MCQ answer"
+            "choosing incorrect multiple choice option"
           ]
         }
       }
