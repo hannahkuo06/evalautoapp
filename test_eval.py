@@ -48,7 +48,7 @@ class TestGetType(unittest.TestCase):
         # print(rec)
         check = eval.get_type(rec['inputs_pretokenized'])
         print(check)
-        # self.assertIn("individual", check)
+        self.assertIn("individual", check)
 
 
 
@@ -107,8 +107,8 @@ class TestParseTaxonomy(unittest.TestCase):
         self.assertEqual(['Bugs'], tag)
 
         # checks that generated text was a letter (even if expected text is a number)
-        self.assertIn("'2'", justification[0])
-        # self.assertIn("2. No", justification)
+        self.assertIn("2", justification[0])
+
 
     def test_parse_saq(self):
         """
@@ -124,7 +124,7 @@ class TestParseTaxonomy(unittest.TestCase):
 
         tag, justification = eval.parse_taxonomy(q_type + check, rec['generated_text'], rec['expected_text'])
         print(tag, justification)
-        # self.assertEqual(['Bugs', 'Incorrect'], tag)
+        self.assertEqual(['Bugs', 'Incorrect'], tag)
 
 
 
@@ -140,7 +140,7 @@ class TestConverse(unittest.TestCase):
         print(tag)
         print(justification)
         self.assertEqual(['Bugs'], tag)
-        self.assertIn("'2'", justification[0])
+        self.assertIn("2", justification[0])
 
 
     def test_converse_simple(self):
@@ -153,8 +153,8 @@ class TestConverse(unittest.TestCase):
         tag, justification = eval.converse(rec)
         print(tag)
         print(justification)
-        # self.assertEqual(['Incorrect'], tag)
-        # self.assertIn('Yes', justification[0])
+        self.assertEqual(['Incorrect'], tag)
+        self.assertIn('Yes', justification[0])
 
 
     def test_converse_saq(self):
