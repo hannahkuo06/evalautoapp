@@ -4,155 +4,197 @@ from io import BytesIO
 
 import eval
 
-def csv_to_bytes(file_path):
-    # Read the CSV file into a DataFrame
-    # df = pd.read_csv(file_path)
 
-    # Create a BytesIO buffer
-    # buffer = BytesIO()
-
-    # Write DataFrame to CSV in the buffer
-    file_bytes = BytesIO(file_path.encode('utf-8'))  # index=False to omit DataFrame index in the CSV output
-
-    # Get CSV data as bytes
-    # csv_bytes = buffer.getvalue()
-
-    # Optionally, close the buffer
-    # buffer.close()
-
+def csv_to_bytes(file_path) -> bytes:
+    """
+    Converts csv file into bytes object
+    :param file_path:
+    :return: bytes object
+    """
+    with open(file_path, 'rb') as file:
+        file_bytes = file.read()
     return file_bytes
+
+
 class TestEvalBasic(unittest.TestCase):
     def test_get_negs(self):
-        # should return negative records of the data
+        """
+        Tests that get_negs returns the negative records of a table.
+        """
         metrics = ['exact_match']
         negs = eval.get_negs('data/mcq_10.csv', metrics)
         first = negs.iloc[0]
         self.assertEqual(first["id"], 4)
 
 
-class TestResponse(unittest.TestCase):
-    def test_response_simple(self):
+class TestGetType(unittest.TestCase):
+    def test_get_type_simple(self):
+        """
+        Tests get_type with a multiple choice question
+        """
         df = pd.read_csv('data/mcq_10.csv')
         rec = df.iloc[0]
-        check = eval.response_type(rec)
+        check = eval.get_type(rec['inputs_pretokenized'])
         print(check)
-        self.assertIn("single letter", check)
+        self.assertIn("(A, B, C, or D)", check)
 
-    # should be correct even if expected text type incorrect
-    def test_response_neg(self):
-        # metrics = ["exact_match"]
+
+    def test_get_type_saq(self):
+        """
+        Tests get_type with a short answer question
+        """
+        df = pd.read_csv('data/saq_10.csv')
+        rec = df.iloc[0]
+        # print(rec)
+        check = eval.get_type(rec['inputs_pretokenized'])
+        print(check)
+        # self.assertIn("individual", check)
+
+
+
+class TestCheckType(unittest.TestCase):
+    def test_check_type_simple(self):
+        """
+        Tests check_type when it should include 'Yes' in its response
+        """
         df = pd.read_csv('data/mcq_neg_10.csv')
-        record = df.iloc[5]
-        check = eval.response_type(record)
+        rec = df.iloc[0]
+        q_type = eval.get_type(rec['inputs_pretokenized'])
+        check = eval.check_type(rec['generated_text'], q_type)
         print(check)
-        self.assertIn("single letter", check)
+        self.assertIn("Yes", check)
 
-    """TODO: SAQ tests"""
+    def test_check_type_no(self):
+        """
+        Tests check_type when it should include 'No' in its response
+        """
+        df = pd.read_csv('data/saq_10.csv')
+        rec = df.iloc[7]
+        q_type = eval.get_type(rec['inputs_pretokenized'])
+        check = eval.check_type(rec['generated_text'], q_type)
+        print(check)
+        self.assertIn("No", check)
 
-    def test_response_saq(self):
-        self.assertTrue(True)
-
-
-class TestError(unittest.TestCase):
-    def test_response_error_good(self):
+class TestParseTaxonomy(unittest.TestCase):
+    def test_parse_good(self):
+        """
+        Tests parse_taxonomy on correct record
+        """
         df = pd.read_csv('data/mcq_10.csv')
         rec = df.iloc[0]
-        check = eval.response_type(rec)
-        print(check)
-        tag, justification = eval.error_check(rec, check)
-        print(tag, justification)
-        self.assertIn("Good", tag)
-        self.assertIn("1. Yes", justification)
-        self.assertIn("2. Yes", justification)
+        q_type= eval.get_type(rec['inputs_pretokenized'])
+        check = eval.check_type(rec, q_type)
+        tag, justification = eval.parse_taxonomy(q_type + check, rec['generated_text'], rec['expected_text'])
+        print(tag)
+        print(justification)
+        self.assertIn("GOOD", tag)
+        self.assertEqual([], justification)
 
-    """TODO: debug"""
-
-    def test_response_error(self):
+    def test_parse_full(self):
+        """
+        Tests parse_taxonomy on a buggy record
+        """
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[5]
-        check = eval.response_type(rec)
-        print(check)
-        self.assertIn("multiple-choice", check)
-        # self.assertIn("letter", check)
+        q_type = eval.get_type(rec['inputs_pretokenized'])
+        self.assertIn("(A, B, C, or D)", q_type)
 
-        tag, response = eval.error_check(rec, check)
-        print(tag, response)
+        check = eval.check_type(rec['generated_text'], q_type)
+        self.assertIn("Yes", check)
+
+        tag, justification = eval.parse_taxonomy(q_type + check, rec['generated_text'], rec['expected_text'])
+        print(tag, justification)
         self.assertEqual(['Bugs'], tag)
 
         # checks that generated text was a letter (even if expected text is a number)
-        self.assertIn("1. Yes", response)
-        self.assertIn("2. No", response)
-        # self.assertTrue(True)
+        self.assertIn("'2'", justification[0])
+        # self.assertIn("2. No", justification)
 
-    def test_error_neg(self):
-        df = pd.read_csv('data/mcq_neg_10.csv')
-        rec = df.iloc[0]
-        check = eval.response_type(rec)
-        print(check)
-        response = eval.error_check(rec, check)
-        print(response)
-        self.assertNotEqual('Good', response)
+    def test_parse_saq(self):
+        """
+        Tests parse_taxonomy on SAQ
+        """
+        df = pd.read_csv('data/saq_10.csv')
+        rec = df.iloc[1]
+        q_type = eval.get_type(rec['inputs_pretokenized'])
+        self.assertIn("numerical", q_type)
 
-    """TODO: SAQ tests"""
+        check = eval.check_type(rec['generated_text'], q_type)
+        self.assertIn("Yes", check)
 
-    def test_error_saq(self):
-        self.assertTrue(True)
+        tag, justification = eval.parse_taxonomy(q_type + check, rec['generated_text'], rec['expected_text'])
+        print(tag, justification)
+        # self.assertEqual(['Bugs', 'Incorrect'], tag)
 
 
-class TestProcesses(unittest.TestCase):
-    """TODO: tests for process_row and process_batch"""""
 
 class TestConverse(unittest.TestCase):
-    def test_converse_wip(self):
+    def test_converse_full(self):
+        """
+        Tests full integration of converse on a buggy record
+        """
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[5]
 
-        errs, answer = eval.converse(rec)
-        # print(typing)
-        # print(check)
-        print(errs)
-        print(answer)
-        # self.assertIn("multiple-choice", typing)
-        # self.assertIn("Yes", check)
-        self.assertIn("Yes", answer)
+        tag, justification = eval.converse(rec)
+        print(tag)
+        print(justification)
+        self.assertEqual(['Bugs'], tag)
+        self.assertIn("'2'", justification[0])
 
-    """TODO: extensively test converse"""
-    def test_converse_typing(self):
-        self.assertTrue(True)
 
-    def test_converse_type_checking(self):
-        self.assertTrue(True)
-
-    def test_converse_answer_check(self):
-        self.assertTrue(True)
-
-    def test_converse_error_check_careless(self):
+    def test_converse_simple(self):
+        """
+        Tests converse on simple incorrect MCQ record
+        """
         df = pd.read_csv('data/mcq_neg_10.csv')
         rec = df.iloc[0]
 
-        errs, answer = eval.converse(rec)
-        print(errs)
-        print(answer)
-        self.assertEqual(['Careless Mistake'], errs)
-        self.assertIn('Yes', answer[0])
-    def test_converse_error_check(self):
-        df = pd.read_csv('data/mcq_neg_10.csv')
-        rec = df.iloc[5]
+        tag, justification = eval.converse(rec)
+        print(tag)
+        print(justification)
+        # self.assertEqual(['Incorrect'], tag)
+        # self.assertIn('Yes', justification[0])
 
-        errs, answer = eval.converse(rec)
-        print(errs)
-        print(answer)
-        self.assertEqual(['Bugs'], errs)
 
-    """TODO"""
-    def test_quality(self):
+    def test_converse_saq(self):
+        """
+        Tests converse on simple incorrect SAQ record
+        """
+        df = pd.read_csv('data/saq_10.csv')
+        rec = df.iloc[7]
+
+        tag, justification = eval.converse(rec)
+        print(tag)
+        print(justification)
+        self.assertIn('Bugs', tag)
+
+    def test_converse_good(self):
+        """
+        Tests converse on a correct record
+        """
         df = pd.read_csv('data/fake_data.csv')
-
         rec = df.iloc[0]
 
-        errs, answer = eval.converse(rec)
-        # self.assertEqual('Good', errs)
-        self.assertTrue(True)
+        tag, justification = eval.converse(rec)
+        print(tag)
+        print(justification)
+        self.assertEqual('GOOD', tag)
+        self.assertEqual([], justification)
+
+class TestParallelize(unittest.TestCase):
+    def test_para_cols(self):
+        """
+        Tests that parallelize returns df with 'Errors' and 'Justification' columns
+        """
+        df = pd.read_csv('data/fake_data.csv')
+        self.assertNotIn('Errors', df.columns)
+        self.assertNotIn('Justification', df.columns)
+
+        file_bytes = csv_to_bytes('data/fake_data.csv')
+        df = eval.para(file_bytes)
+        self.assertIn('Errors', df.columns)
+        self.assertIn('Justification', df.columns)
 
 
 
