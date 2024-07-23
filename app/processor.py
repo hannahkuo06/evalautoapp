@@ -1,6 +1,6 @@
 import streamlit as st
 import base64
-import eval
+from app.eval import para_process
 
 
 st.markdown("#### Instructions")
@@ -10,7 +10,7 @@ st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the pr
 @st.cache_data
 def process(file):
     content_bytes = file.read()
-    return eval.parallelize(content_bytes)
+    return para_process(content_bytes)
 
 
 def download_df(df, filename):

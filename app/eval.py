@@ -46,7 +46,7 @@ def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
     return response_message
 
 
-def parse_taxonomy(input, generated_text, expected_text):
+def parse_taxonomy(errs, generated_text, expected_text):
     with open('errors.json', 'r') as f:
         taxonomy = json.load(f)
 
@@ -59,7 +59,7 @@ def parse_taxonomy(input, generated_text, expected_text):
                       f""
                       f"Generated text: {generated_text}\n"
                       f"Expected text: {expected_text}\n"
-                      f"Previous analysis: {input}\n"
+                      f"Previous analysis: {errs}\n"
                       f"Prompt: {err_info['_description']}, state why in max 2 sentences."
                       f"Examples: {err_info['_examples']}\n"
                       f"")
@@ -73,7 +73,7 @@ def parse_taxonomy(input, generated_text, expected_text):
     return err_lst, explanations
 
 
-def parallelize(file_bytes, num_processes=None):
+def para_process(file_bytes, num_processes=None):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
     with ProcessPoolExecutor(max_workers=num_processes) as executor:
         results = list(executor.map(converse, [row for _, row in df.iterrows()]))
@@ -82,7 +82,6 @@ def parallelize(file_bytes, num_processes=None):
 
     df['Errors'] = errs
     df['Justification'] = expl
-
     return df
 
 

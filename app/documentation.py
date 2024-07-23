@@ -69,8 +69,8 @@ with tabs[1]:
 with tabs[2]:
     st.markdown("<a id='example_visual'></a>", unsafe_allow_html=True)
     st.markdown('#### Example Visual')
-    st.markdown("Here are some visual steps to follow regarding the processing of a runspec\'s dataset. Feel free to"
-                "scroll through the tables to see more columns.")
+    st.markdown("Here are some visual steps to follow regarding the processing of a runspec\'s dataset. "
+                "Scroll through the tables to see more columns.")
 
     st.dataframe(input_df)
     st.markdown("This is the data provided in `fake_data.csv`, located in the `data` folder on GitHub. Note there is no "
@@ -82,8 +82,9 @@ with tabs[2]:
 with tabs[3]:
     st.markdown("<a id='error_tags'></a>", unsafe_allow_html=True)
     st.markdown('#### Error Tags')
-    st.markdown("The errors GPT4 will find will depend on how `errors.json` is defined and labeled. Here are default "
-                "errors in the file:")
+    st.markdown("The errors GPT4 will find will depend on how `errors.json` is defined and labeled. "
+                "The default `errors.json` file is primarily used as a framework rather than specific categorization."
+                "Here are default errors in the file:")
     st.json(errors)
 
 with tabs[4]:
