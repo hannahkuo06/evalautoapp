@@ -11,7 +11,7 @@ st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the pr
 @st.cache_data
 def process(file):
     content_bytes = file.read()
-    return eval.parallelize2(content_bytes)
+    return eval.para_calls(content_bytes)
 
 
 def download_df(df, filename):
@@ -30,21 +30,6 @@ def main():
         st.write("Evaluation complete!")
         # print(type(df))
         st.write(df)
-
-        # st.sidebar.title('Filter options')
-        # st.sidebar.header('Metrics')
-        #
-        # st.sidebar.header('Errors')
-        # search_term = st.text_input('Search for', '')
-
-        # if search_term:
-        #     filtered_df = df[df['Errors'].str.contains(search_term, case=False, na=False)]
-        #     st.dataframe(filtered_df)
-        #
-        # else:
-        #     filtered_df = df
-        #     st.dataframe(filtered_df)
-
 
         st.markdown(download_df(df, 'output'), unsafe_allow_html=True)
 

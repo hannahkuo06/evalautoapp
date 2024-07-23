@@ -3,6 +3,9 @@ import pandas as pd
 import json
 import yaml
 from multiprocessing import Pool
+import asyncio
+import aiohttp
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from openai import AzureOpenAI
 from io import BytesIO, StringIO
@@ -46,6 +49,8 @@ def predict_openai(prompt, temperature=0.3, max_tokens=100, top_k=50):
     response_message = response.choices[0].message.content
     return response_message
 
+# async def async_api_call(session, prompt, temperature=0.3, max_tokens=100):
+
 
 # checks the required answer type for prompt
 # def response_type(record):
@@ -84,7 +89,7 @@ def predict_openai(prompt, temperature=0.3, max_tokens=100, top_k=50):
 #         else:
 #             return errors, response
 
-    # return response
+# return response
 
 
 def parse_taxonomy(input, generated_text, expected_text):
@@ -105,17 +110,18 @@ def parse_taxonomy(input, generated_text, expected_text):
                       f"Prompt: {err_info['_description']}, state why."
                       f"Examples: {err_info['_examples']}\n"
                       f"")
-                      # f"Respond yes or no")
+            # f"Respond yes or no")
             check = predict_openai(prompt)
             if check.__contains__('Yes'):
                 err_lst.append(err_name)
                 explanations.append(check)
 
-    if not err_lst:
-        return 'Good'
+    # if not err_lst:
+    #     return 'Good', ''
     return err_lst, explanations
 
     # return check
+
 
 # @functools.lru_cache(maxsize=None)
 # def process_row(row):
@@ -152,28 +158,28 @@ def add_col(df, col_name, values):
 #     chunks = [df.iloc[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
 #
 #     with Pool(num_processes) as pool:
-    #     results = pool.map(process_batch, chunks)
-    #     # print(results)
-    #
-    #     tags = []
-    #     justifications = []
-    #
-    #     for tag, justification in results:
-    #         # print(tag)
-    #         for t in tag:
-    #             tags.append(t)
-    #
-    #         for j in justification:
-    #             justifications.append(j)
-    #
-    # # results = [item for sublist in tags for item in sublist]
-    #
-    # df = add_col(df, 'Errors', tags)
-    # df = add_col(df, 'Justifications', justifications)
-    # # df['Errors'] = tags
-    # # # print(justification)
-    # # df['Justifications'] = justifications
-    # return df
+#     results = pool.map(process_batch, chunks)
+#     # print(results)
+#
+#     tags = []
+#     justifications = []
+#
+#     for tag, justification in results:
+#         # print(tag)
+#         for t in tag:
+#             tags.append(t)
+#
+#         for j in justification:
+#             justifications.append(j)
+#
+# # results = [item for sublist in tags for item in sublist]
+#
+# df = add_col(df, 'Errors', tags)
+# df = add_col(df, 'Justifications', justifications)
+# # df['Errors'] = tags
+# # # print(justification)
+# # df['Justifications'] = justifications
+# return df
 
 # def batch(chunk):
 #     tags = []
@@ -188,27 +194,32 @@ def add_col(df, col_name, values):
 
 def parallelize2(file_bytes, num_processes=4):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-    # print(df)
+    print(df['generated_text'].shape[0])
     chunk_size = len(df) // num_processes
     chunks = [df.iloc[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
+    # print(chunks)
+
+    if len(df) % num_processes != 0:
+        chunks[-1] = pd.concat([chunks[-1], df.iloc[num_processes * chunk_size:]])
 
     with Pool(num_processes) as pool:
         results = pool.map(converse, chunks)
-        # print(results)
+        # print(len(chunks))
+        # print(results[0])
 
         tags = []
         justifications = []
 
         for tag, justification in results:
-            # print(tag)
-            # print(justification)
+            print("T:", tag)
+            print("J:", justification)
             # for t in tag:
             #     tags.append(t)
             #
             # for j in justification:
             #     justifications.append(j)
 
-            tags.append(tag)
+            tags.extend(tag)
             justifications.append(justification)
 
     # results = [item for sublist in tags for item in sublist]
@@ -217,6 +228,39 @@ def parallelize2(file_bytes, num_processes=4):
     df = add_col(df, 'Errors', tags)
     df = add_col(df, 'Justifications', justifications)
     return df
+
+# def para(file_bytes, num_threads=4):
+#     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+#     # print(df['generated_text'].shape[0])
+#     results = []
+#
+#     results = []
+#     async with aiohttp.ClientSession() as session:
+#         tasks = [converse(session, row) for _, row in df.iterrows()]
+#         results = await asyncio.gather(*tasks)
+#
+#     return results
+
+def para_calls(file_bytes, num_threads=4):
+    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+    results = []
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = [executor.submit(process_row, row) for _, row in df.iterrows()]
+        for future in as_completed(futures):
+            try:
+                # print(future.result())
+                results.append(future.result())
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    # print("yes")
+    # print(results)
+    df['Errors'] = [results[0][0] for i in results]
+    df['Justification'] = [results[0][1] for i in results]
+    return df
+
+def process_row(row):
+    return converse(row)
 
 def converse(record):
     # with open('errors.json', 'r') as f:
@@ -229,7 +273,7 @@ def converse(record):
     type_a = predict_openai(type_q)
     # print(type_a)
 
-    check_q = f"Is {record['generated_text']} of the same type as stated in: {type_a}? State why. "
+    check_q = f"Is {[record['generated_text']]} of the same type as stated in: {type_a}? State why. "
     check_a = predict_openai(check_q)
     # print(check_a)
 
@@ -239,7 +283,7 @@ def converse(record):
     #             f"Other information: {type_a}, {check_a}")
     # answer_a = predict_openai(answer_q)
 
-    errs, expl = parse_taxonomy(type_a + check_a, record['generated_text'], record['expected_text'])
+    errs, expl = parse_taxonomy(type_a + check_a, [record['generated_text']], [record['expected_text']])
 
     # for err_type, type_info in taxonomy['Errors'].items():
     #     for err_name, err_info in type_info['errors'].items():
@@ -251,8 +295,8 @@ def converse(record):
     #         errors_a = predict_openai(errors_q)
 
     # return errs, check_a + answer_a
+    print(errs, expl)
     return errs, expl
-
 
 # @functools.lru_cache(maxsize=None)
 # def analyze(file_bytes):
