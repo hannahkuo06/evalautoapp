@@ -48,6 +48,20 @@ elif selection == "The Algorithm":
                     are commonly found during data evaluation. This way, new errors can be manually added for GPT4 to keep
                     an eye out for in the data sheets for more accurate and detailed error-checking.
                     """)
+
+    st.markdown("<u>The Process</u>", unsafe_allow_html=True)
+    st.markdown("""
+        1. **Answer Type**: 
+            First, the input prompt is sent into GPT4, asking for the type of answer it is looking for (ex. multiple 
+            choice, name, numerical answer...)
+        2. **Type Check**:
+            GPT4 compares the generated text with the output from the previous part to check if the generated output 
+            type is correct. (ex. prompt is multiple choice, does the generated text return A, B, C, or D?)
+        3. **Parse Taxonomy**:
+            Taking the results from the previous parts, we ask GPT4 again to make an assessment using our `errors.json` 
+            file. It will return both the tags it matches and a max 2 sentence reasoning for its labeling.
+    """)
+
     st.markdown("<u>The Output</u>", unsafe_allow_html=True)
     st.markdown("""
                 - **CSV file**: The same input data file with additional columns
