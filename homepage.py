@@ -100,6 +100,7 @@ elif selection == "Error Tags":
 elif selection == "Next Steps":
     st.markdown("<a id='next_steps'></a>", unsafe_allow_html=True)
     st.markdown("#### Next Steps")
+
     st.markdown("<u>Runtime</u>", unsafe_allow_html=True)
     st.markdown("""
             Most immediately, the runtime will need to be improved. Currently, there is some parallelization, but refining
@@ -112,10 +113,18 @@ elif selection == "Next Steps":
             additional metric itself. A future step would be to incorporate the existing metric scores into this error 
             evaluation in order to better understand, assess, and analyze the data accurately.
     """)
+
     st.markdown("<u>Summarization</u>", unsafe_allow_html=True)
     st.markdown("""
             Each dataset file spans hundreds (sometimes thousands) of rows. Spotchecking that many error tags would 
             eventually become a tedious task in itself as well. Including a summarization feature that would list the 
             top three errors and list a couple relevant records would be extremely helpful and enhance this process for 
             linguists.
+    """)
+
+    st.markdown("<u>User-friendly Features</u>", unsafe_allow_html=True)
+    st.markdown("""
+            Adding more features with the target user audience in mind would make this tool more robust. Since it is
+            most probable that the user does not have a technical background, adding more features such as an 
+            interactive dataframe to accommodate and reduce the technicalities in using the tool would be ideal.
     """)
