@@ -11,7 +11,7 @@ st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the pr
 @st.cache_data
 def process(file):
     content_bytes = file.read()
-    return eval.para_calls(content_bytes)
+    return eval.para(content_bytes)
 
 
 def download_df(df, filename):
