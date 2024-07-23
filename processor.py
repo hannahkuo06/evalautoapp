@@ -20,18 +20,13 @@ def download_df(df, filename):
     return href
 
 
-def main():
-    uploaded_file = st.file_uploader("Choose a file", type=["csv"], accept_multiple_files=False)
+uploaded_file = st.file_uploader("Choose a file", type=["csv"], accept_multiple_files=False)
 
-    if st.button("Process") and uploaded_file is not None:
-        df = process(uploaded_file)
-        st.markdown("---")
-        st.write("Evaluation complete!")
-        # print(type(df))
-        st.write(df)
+if st.button("Process") and uploaded_file is not None:
+    df = process(uploaded_file)
+    st.markdown("---")
+    st.write("Evaluation complete!")
+    # print(type(df))
+    st.write(df)
 
-        st.markdown(download_df(df, 'output'), unsafe_allow_html=True)
-
-
-if __name__ == '__main__':
-    main()
+    st.markdown(download_df(df, 'output'), unsafe_allow_html=True)
