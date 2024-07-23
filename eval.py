@@ -38,13 +38,13 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(prompt, temperature=0.1, max_tokens=50, top_k=50):
+def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
         messages=message_text,
         temperature=temperature,
-        max_tokens=max_tokens
+        max_tokens=max_tokens,
         # parallel_tool_calls=True
     )
 
@@ -108,7 +108,7 @@ def parse_taxonomy(input, generated_text, expected_text):
                       f""
                       f"Generated text: {generated_text}\n"
                       f"Expected text: {expected_text}\n"
-                      f"Error: {input}\n"
+                      f"Previous analysis: {input}\n"
                       f"Prompt: {err_info['_description']}, state why in max 2 sentences."
                       f"Examples: {err_info['_examples']}\n"
                       f"")
@@ -119,7 +119,7 @@ def parse_taxonomy(input, generated_text, expected_text):
                 explanations.append(check)
 
     if not err_lst:
-        return 'Good', ''
+        return 'GOOD', explanations
     return err_lst, explanations
 
     # return check
@@ -242,22 +242,22 @@ def para(file_bytes, num_processes=None):
     df['Justification'] = expl
 
     return df
-
-def calls(file_bytes):
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-
-    tags = []
-    just = []
-
-    for row in df.iterrows():
-        errs, expl = converse(row[1])
-        tags.append(errs)
-        just.append(expl)
-
-    df['Errors'] = tags
-    df['Justifications'] = just
-
-    return df
+#
+# def calls(file_bytes):
+#     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+#
+#     tags = []
+#     just = []
+#
+#     for row in df.iterrows():
+#         errs, expl = converse(row[1])
+#         tags.append(errs)
+#         just.append(expl)
+#
+#     df['Errors'] = tags
+#     df['Justifications'] = just
+#
+#     return df
 
 
 # def para_calls(file_bytes, num_threads=4):
@@ -281,12 +281,13 @@ def calls(file_bytes):
     #     print(type(item))
     #     df['Errors'] = item[0]
     #     df['Justification'] = item[1]
-    return df
+    # return df
 
-def process_row(row):
-    return converse(row)
+# def process_row(row):
+#     return converse(row)
 
 def get_type(question):
+    # print([question])
     type_q = f"What type of question is this? What type of answer is this question expecting? {[question]}"
     type_a = predict_openai(type_q)
     # print(type_a)
