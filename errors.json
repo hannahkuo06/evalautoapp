@@ -55,7 +55,7 @@
           ]
         },
         "Incorrect": {
-          "_description": "Is the answer wrong?",
+          "_description": "Is the generated answer not the same as the expected answer?",
           "_examples": [
             "choosing incorrect multiple choice option"
           ]
