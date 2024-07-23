@@ -38,7 +38,7 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(prompt, temperature=0.3, max_tokens=100, top_k=50):
+def predict_openai(prompt, temperature=0.1, max_tokens=50, top_k=50):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
@@ -109,7 +109,7 @@ def parse_taxonomy(input, generated_text, expected_text):
                       f"Generated text: {generated_text}\n"
                       f"Expected text: {expected_text}\n"
                       f"Error: {input}\n"
-                      f"Prompt: {err_info['_description']}, state why."
+                      f"Prompt: {err_info['_description']}, state why in max 2 sentences."
                       f"Examples: {err_info['_examples']}\n"
                       f"")
             # f"Respond yes or no")
@@ -145,10 +145,10 @@ def parse_taxonomy(input, generated_text, expected_text):
 #     return tags, justifications
 
 
-def add_col(df, col_name, values):
-    # print(values)
-    df[col_name] = values
-    return df
+# def add_col(df, col_name, values):
+#     # print(values)
+#     df[col_name] = values
+#     return df
 
 
 # def parallelize(file_bytes, num_processes=4):
@@ -194,22 +194,22 @@ def add_col(df, col_name, values):
 #     # print(tags)
 #     return justifications
 
-def parallelize2(file_bytes, num_processes=4):
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-    # print(df['generated_text'].shape[0])
-    chunk_size = len(df) // num_processes
-    chunks = np.array_split(df, num_processes)
+# def parallelize2(file_bytes, num_processes=4):
+#     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+#     # print(df['generated_text'].shape[0])
+#     chunk_size = len(df) // num_processes
+#     chunks = np.array_split(df, num_processes)
     # print(chunks)
 
-    with Pool(num_processes) as pool:
-        results = pool.map(converse, chunks)
-        # print(len(chunks))
-        # print(results[0])
-
-        tags = []
-        justifications = []
-
-        for tag, justification in results:
+    # with Pool(num_processes) as pool:
+    #     results = pool.map(converse, chunks)
+    #     # print(len(chunks))
+    #     # print(results[0])
+    #
+    #     tags = []
+    #     justifications = []
+    #
+    #     for tag, justification in results:
             # print("T:", tag)
             # print("J:", justification)
             # for t in tag:
@@ -218,15 +218,15 @@ def parallelize2(file_bytes, num_processes=4):
             # for j in justification:
             #     justifications.append(j)
 
-            tags.extend(tag)
-            justifications.append(justification)
-
-    # results = [item for sublist in tags for item in sublist]
-    # print(len(tags))
-
-    df = add_col(df, 'Errors', tags)
-    df = add_col(df, 'Justifications', justifications)
-    return df
+    #         tags.extend(tag)
+    #         justifications.append(justification)
+    #
+    # # results = [item for sublist in tags for item in sublist]
+    # # print(len(tags))
+    #
+    # df = add_col(df, 'Errors', tags)
+    # df = add_col(df, 'Justifications', justifications)
+    # return df
 
 def para(file_bytes, num_processes=None):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
@@ -286,6 +286,20 @@ def calls(file_bytes):
 def process_row(row):
     return converse(row)
 
+def get_type(question):
+    type_q = f"What type of question is this? What type of answer is this question expecting? {[question]}"
+    type_a = predict_openai(type_q)
+    # print(type_a)
+    return type_a
+
+def check_type(gen_text, q_type):
+    check_q = f"Is {gen_text} of the same type answer as stated in: {q_type}? State why. "
+    check_a = predict_openai(check_q)
+    # print(check_a)
+    return check_a
+
+
+
 def converse(record):
     # print(record)
     # with open('errors.json', 'r') as f:
@@ -294,13 +308,9 @@ def converse(record):
     # print("gen:", record['generated_text'])
     # print("exp:", record['expected_text'])
 
-    type_q = f"What kind of question is this? What type of answer is it looking for? {[record['inputs_pretokenized']]}"
-    type_a = predict_openai(type_q)
-    print(type_a)
+    q_type = get_type(record['inputs_pretokenized'])
 
-    check_q = f"Is {record['generated_text']} of the same type as stated in: {type_a}? State why. "
-    check_a = predict_openai(check_q)
-    print(check_a)
+    check = check_type(record['generated_text'], q_type)
 
     # answer_q = (f"Given the information previously given, is there anything wrong with the outputs? Begin with yes or no, state why."
     #             f"Generated:{record['generated_text']}, Expected: {record['expected_text']}, "
@@ -308,7 +318,7 @@ def converse(record):
     #             f"Other information: {type_a}, {check_a}")
     # answer_a = predict_openai(answer_q)
 
-    errs, expl = parse_taxonomy(type_a + check_a, record['generated_text'], record['expected_text'])
+    errs, expl = parse_taxonomy(q_type + check, record['generated_text'], record['expected_text'])
 
     # for err_type, type_info in taxonomy['Errors'].items():
     #     for err_name, err_info in type_info['errors'].items():
@@ -320,7 +330,7 @@ def converse(record):
     #         errors_a = predict_openai(errors_q)
 
     # return errs, check_a + answer_a
-    print(errs, expl)
+    # print(errs, expl)
     return errs, expl
 
 # @functools.lru_cache(maxsize=None)
