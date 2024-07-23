@@ -1,0 +1,15 @@
+id,expected_text,generated_text,inputs_pretokenized,response_code,exact_match,prefix_exact_match,quasi_exact_match,quasi_prefix_exact_match,contains_match,runspec,model,model_internal_name,runspec_internal_name,f1-macro,f1-micro,Errors,Justification
+0,A,A,"What color is the sky?
+
+A. blue
+B. green
+C. red 
+D. purple",200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,,GOOD,[]
+1,2,3,What is 1 + 1?,200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,,"['Completeness', 'Bugs', 'Incorrect']","['Yes, the generated answer is incorrect as it does not match the expected answer.', 'Yes, there is a bug in the generated text. The generated text provided the incorrect numerical answer compared to the expected text.', ""Yes, the generated answer is not the same as the expected answer because the generated answer is '3' while the expected answer is '2'. This indicates a calculation or interpretation error.""]"
+2,Sacramento,Yes,What is the capital of California?,200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,,"['Completeness', 'Bugs', 'Incorrect']","['Yes, the generated answer is lacking important information because it does not provide the name of a city as expected from the question. Instead, it gives a simple affirmative response which does not answer the question correctly.', 'Yes, there is a bug in the generated text. The generated text is a simple affirmative response ""Yes"", which is a data type error as the expected answer should be a proper noun, specifically the name of a city.', 'Yes, the generated answer is not the same as the expected answer because it is not a proper noun or a city name as required by the question. Instead, it is a simple affirmative response.']"
+3,C,B,"What animal does not live in the ocean?
+
+A. dolphin
+B. turtle
+C. elephant 
+D. whale",200,0,0,0,0,0,runspec_drop,Openai_GPT3.5_release_run,Openai_GPT3.5_release_run,runspec_fake,,,"['Bugs', 'Incorrect']","['Yes, there is a bug in the generated text. The generated text should have been ""C"" to match the expected text.', 'Yes, the generated answer is not the same as the expected answer because the system selected option B instead of the correct option C.']"
