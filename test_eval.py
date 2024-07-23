@@ -1,9 +1,26 @@
 import unittest
 import pandas as pd
+from io import BytesIO
 
 import eval
 
+def csv_to_bytes(file_path):
+    # Read the CSV file into a DataFrame
+    # df = pd.read_csv(file_path)
 
+    # Create a BytesIO buffer
+    # buffer = BytesIO()
+
+    # Write DataFrame to CSV in the buffer
+    file_bytes = BytesIO(file_path.encode('utf-8'))  # index=False to omit DataFrame index in the CSV output
+
+    # Get CSV data as bytes
+    # csv_bytes = buffer.getvalue()
+
+    # Optionally, close the buffer
+    # buffer.close()
+
+    return file_bytes
 class TestEvalBasic(unittest.TestCase):
     def test_get_negs(self):
         # should return negative records of the data
@@ -126,6 +143,17 @@ class TestConverse(unittest.TestCase):
         print(errs)
         print(answer)
         self.assertEqual(['Bugs'], errs)
+
+    """TODO"""
+    def test_quality(self):
+        df = pd.read_csv('data/fake_data.csv')
+
+        rec = df.iloc[0]
+
+        errs, answer = eval.converse(rec)
+        # self.assertEqual('Good', errs)
+        self.assertTrue(True)
+
 
 
 if __name__ == '__main__':
