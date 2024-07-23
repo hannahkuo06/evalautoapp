@@ -4,8 +4,7 @@ import eval
 
 
 st.markdown("#### Instructions")
-# note to download a csv
-st.markdown("1. Upload csv of data \n2. Click 'Process'\n3. View/Download the processed csv")
+st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the processed csv")
 
 
 @st.cache_data

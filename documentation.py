@@ -1,18 +1,6 @@
 import json
-
 import pandas as pd
 import streamlit as st
-
-sections = {
-    "Goal": "goal",
-    "The Algorithm": "the_algorithm",
-    "Example Visual": "example_visual",
-    "Error Tags": "error_tags",
-    "Next Steps": "next_steps"
-}
-
-st.sidebar.title("Documentation")
-selection = st.sidebar.radio("Go to", list(sections.keys()))
 
 input_df = pd.read_csv('data/fake_data.csv')
 output_df = pd.read_csv('data/example_fake_data_output.csv')
@@ -20,7 +8,9 @@ output_df = pd.read_csv('data/example_fake_data_output.csv')
 with open('errors.json', 'r') as file:
     errors = json.load(file)
 
-if selection == "Goal":
+tabs = st.tabs(["Goal", "The Algorithm", "Example Visual", "Error Tags", "Next Steps"])
+
+with tabs[0]:
     st.markdown("<a id='goal'></a>", unsafe_allow_html=True)
     st.markdown('#### Goal')
     st.markdown("""
@@ -33,8 +23,7 @@ if selection == "Goal":
         the errors found, greatly reducing the time and effort required to assess and analyze the data. Linguists can then
         spotcheck, refine, and summarize the errors or directly send this table as a CSV to engineering.
         """)
-
-elif selection == "The Algorithm":
+with tabs[1]:
     st.markdown("<a id='the_algorithm'></a>", unsafe_allow_html=True)
     st.markdown("#### The Algorithm")
     st.markdown("<u>The Components</u>", unsafe_allow_html=True)
@@ -77,7 +66,7 @@ elif selection == "The Algorithm":
         generated text, assessing for errors, before outputting a CSV with the relevant information in the new columns.
                 """)
 
-elif selection == "Example Visual":
+with tabs[2]:
     st.markdown("<a id='example_visual'></a>", unsafe_allow_html=True)
     st.markdown('#### Example Visual')
     st.markdown("Here are some visual steps to follow regarding the processing of a runspec\'s dataset. Feel free to"
@@ -90,14 +79,14 @@ elif selection == "Example Visual":
     st.dataframe(output_df)
     st.markdown("The new columns are added with the relevant information populated.")
 
-elif selection == "Error Tags":
+with tabs[3]:
     st.markdown("<a id='error_tags'></a>", unsafe_allow_html=True)
     st.markdown('#### Error Tags')
     st.markdown("The errors GPT4 will find will depend on how `errors.json` is defined and labeled. Here are default "
                 "errors in the file:")
     st.json(errors)
 
-elif selection == "Next Steps":
+with tabs[4]:
     st.markdown("<a id='next_steps'></a>", unsafe_allow_html=True)
     st.markdown("#### Next Steps")
 
