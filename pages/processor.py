@@ -9,7 +9,7 @@ st.markdown("#### Instructions")
 st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the processed csv")
 
 
-@st.cache_data
+# @st.cache_data
 def process(file):
     content_bytes = file.read()
     result_df = asyncio.run(parallel_async(content_bytes))
