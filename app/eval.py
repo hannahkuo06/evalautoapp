@@ -1,8 +1,10 @@
 import functools
 import pandas as pd
 import json
+import asyncio
+import aiohttp
 
-from concurrent.futures import ProcessPoolExecutor
+# from concurrent.futures import ProcessPoolExecutor
 
 from openai import AzureOpenAI
 from io import BytesIO
@@ -21,6 +23,7 @@ client = AzureOpenAI(
     api_version="2024-02-15-preview",
 )
 
+ENDPOINT = "https://core-llm-1.openai.azure.com/"
 
 # returns df of negatives from file.
 # Takes in a list of metrics in the case more than one metric is used to evaluate
@@ -33,7 +36,7 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
+async def predict_openai(session, prompt, temperature=0, max_tokens=50, top_k=1):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
@@ -42,11 +45,25 @@ def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
         max_tokens=max_tokens,
     )
 
-    response_message = response.choices[0].message.content
-    return response_message
+    headers = {
+        'Authorization': f'Bearer {client.api_key}',
+        'Content-Type': 'application/json'
+    }
+    json_data = {
+        'model': 'gpt-4',
+        'messages': [{'role': 'system', 'content': prompt}],
+        'temperature': 0.7
+    }
+
+    async with session.post(ENDPOINT, headers=headers, json=json_data) as response:
+        response_data = await response.json()
+        return response_data['choices'][0]['message']['content']
+
+    # response_message = response.choices[0].message.content
+    # return response_message
 
 
-def parse_taxonomy(errs, generated_text, expected_text):
+async def parse_taxonomy(session, errs, generated_text, expected_text):
     with open('errors.json', 'r') as f:
         taxonomy = json.load(f)
 
@@ -63,7 +80,7 @@ def parse_taxonomy(errs, generated_text, expected_text):
                       f"Prompt: {err_info['_description']}, state why in max 2 sentences."
                       f"Examples: {err_info['_examples']}\n"
                       f"")
-            check = predict_openai(prompt)
+            check = await predict_openai(session, prompt)
             if check.__contains__('Yes'):
                 err_lst.append(err_name)
                 explanations.append(check)
@@ -73,33 +90,35 @@ def parse_taxonomy(errs, generated_text, expected_text):
     return err_lst, explanations
 
 
-def para_process(file_bytes, num_processes=None):
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-    with ProcessPoolExecutor(max_workers=num_processes) as executor:
-        results = list(executor.map(converse, [row for _, row in df.iterrows()]))
-
-    errs, expl = zip(*results)
-
-    df['Errors'] = errs
-    df['Justification'] = expl
-    return df
-
-
-def get_type(question):
+async def get_type(session, question):
     type_q = f"What type of question is this? What type of answer is this question expecting? {[question]}"
-    type_a = predict_openai(type_q)
+    type_a = await predict_openai(session, type_q)
     return type_a
 
 
-def check_type(gen_text, q_type):
+async def check_type(session,gen_text, q_type):
     check_q = f"Is {gen_text} of the same type answer as stated in: {q_type}? State why. "
-    check_a = predict_openai(check_q)
+    check_a = await predict_openai(session, check_q)
     return check_a
 
 
-def converse(record):
-    q_type = get_type(record['inputs_pretokenized'])
-    check = check_type(record['generated_text'], q_type)
-
-    errs, expl = parse_taxonomy(q_type + check, record['generated_text'], record['expected_text'])
+async def converse(record, session):
+    q_type = await get_type(session, record['inputs_pretokenized'])
+    check = await check_type(session, record['generated_text'], q_type)
+    err_tuple = await parse_taxonomy(session, q_type + check, record['generated_text'], record['expected_text'])
+    errs, expl = err_tuple
     return errs, expl
+
+async def parallel_async(file_bytes):
+    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+
+    async with aiohttp.ClientSession() as session:
+        tasks = [converse(row, session) for _, row in df.iterrows()]
+        results = await asyncio.gather(*tasks)
+
+    result1, result2 = zip(*results)
+
+    df['Errors'] = result1
+    df['Justification'] = result2
+
+    return df
