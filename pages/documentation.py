@@ -12,7 +12,7 @@ tabs = st.tabs(["Goal", "The Algorithm", "Example Visual", "Error Tags", "Next S
 
 with tabs[0]:
     st.markdown("<a id='goal'></a>", unsafe_allow_html=True)
-    st.markdown('#### Goal')
+    st.markdown('#### 🏆 Goal')
     st.markdown("""
         Currently, linguists are tasked with inspecting spreadsheets of model results, making notes of any errors found in 
         an additional 'Comments' column to be sent to the engineering team for further training or validation. 
@@ -25,7 +25,7 @@ with tabs[0]:
         """)
 with tabs[1]:
     st.markdown("<a id='the_algorithm'></a>", unsafe_allow_html=True)
-    st.markdown("#### The Algorithm")
+    st.markdown("#### 📈 The Algorithm")
     st.markdown("<u>The Components</u>", unsafe_allow_html=True)
     st.markdown("""
                 - **Runspec**: includes the dataset with prompts as well as other information such as its postprocessor,
@@ -68,7 +68,7 @@ with tabs[1]:
 
 with tabs[2]:
     st.markdown("<a id='example_visual'></a>", unsafe_allow_html=True)
-    st.markdown('#### Example Visual')
+    st.markdown('#### 📊 Example Visual')
     st.markdown("Here are some visual steps to follow regarding the processing of a runspec\'s dataset. "
                 "Scroll through the tables to see more columns.")
 
@@ -81,7 +81,7 @@ with tabs[2]:
 
 with tabs[3]:
     st.markdown("<a id='error_tags'></a>", unsafe_allow_html=True)
-    st.markdown('#### Error Tags')
+    st.markdown('#### ❌ Error Tags')
     st.markdown("The errors GPT4 will find will depend on how `errors.json` is defined and labeled. "
                 "The default `errors.json` file is primarily used as a framework rather than specific categorization."
                 "Here are default errors in the file:")
@@ -89,7 +89,7 @@ with tabs[3]:
 
 with tabs[4]:
     st.markdown("<a id='next_steps'></a>", unsafe_allow_html=True)
-    st.markdown("#### Next Steps")
+    st.markdown("#### ⏭️ Next Steps")
 
     st.markdown("<u>Runtime</u>", unsafe_allow_html=True)
     st.markdown("""
