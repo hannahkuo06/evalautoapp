@@ -73,8 +73,8 @@ with tabs[2]:
                 "Scroll through the tables to see more columns.")
 
     st.dataframe(input_df)
-    st.markdown("This is the data provided in `fake_data.csv`, located in the `data` folder on GitHub. Note there is no "
-                "'Errors' or 'Justifications' column'. Now we run it through the 'Upload File and Process' page...")
+    st.markdown("This is the data provided in `fake_data.csv`, located in the `data` folder on GitHub. Note there is no"
+                "'Errors' or 'Justifications' column. Now we run it through the 'Upload File and Process' page...")
     # include example df here
     st.dataframe(output_df)
     st.markdown("The new columns are added with the relevant information populated.")
