@@ -1,6 +1,8 @@
+import asyncio
+
 import streamlit as st
 import base64
-from app.eval import para_process
+from app.eval import parallel_async
 
 
 st.markdown("#### Instructions")
@@ -10,7 +12,8 @@ st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the pr
 @st.cache_data
 def process(file):
     content_bytes = file.read()
-    return para_process(content_bytes)
+    result_df = asyncio.run(parallel_async(content_bytes))
+    return result_df
 
 
 def download_df(df, filename):
@@ -26,7 +29,6 @@ if st.button("Process") and uploaded_file is not None:
     df = process(uploaded_file)
     st.markdown("---")
     st.write("Evaluation complete!")
-    # print(type(df))
     st.write(df)
 
     st.markdown(download_df(df, 'output'), unsafe_allow_html=True)
