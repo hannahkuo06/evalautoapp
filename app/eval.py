@@ -1,4 +1,6 @@
 import functools
+from concurrent.futures import ThreadPoolExecutor
+
 import pandas as pd
 import json
 import asyncio
@@ -37,6 +39,24 @@ def predict_openai(session, prompt, temperature=0, max_tokens=50, top_k=1):
 
     response_message = response.choices[0].message.content
     return response_message
+
+    # url = ENDPOINT
+    # headers = {
+    #     'Authorization': client.api_key,
+    #     'Content-Type': 'application/json'
+    # }
+    # payload = {
+    #     'model': 'GPT4',
+    #     'prompt': prompt,
+    #     'max_tokens': max_tokens
+    # }
+    #
+    # async with session.post(url, headers=headers, json=payload) as response:
+    #     if response.status == 200:
+    #         result = response.json()
+    #         return result['choices'][0]['text']
+    #     else:
+    #         return f"Error: {response.status} - {await response.text()}"
 
 
 async def parse_taxonomy(session, q_type, check, generated_text, expected_text):
@@ -87,18 +107,36 @@ async def converse(record, session):
     return tags, expl
 
 
-async def parallel_async(file_bytes):
+async def parallel_async(file_bytes, batch_size=10):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
 
     # results_list = []
+    results = []
 
     async with aiohttp.ClientSession() as session:
-        tasks = [converse(row, session) for _, row in df.iterrows()]
-        results = await asyncio.gather(*tasks)
+        loop = asyncio.get_event_loop()
+        # with ThreadPoolExecutor(max_workers=4) as executor:
+        #     # tasks = [converse(row, session) for _, row in df.iterrows()]
+        #     tasks = [loop.run_in_executor(executor, converse, row, session) for _, row in df.iterrows()]
+        #     results = await asyncio.gather(*tasks)
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            tasks = []
+            for _, row in df.iterrows():
+                tasks = []
+                for i in range(0, len(df), batch_size):
+                    batch = df.iloc[i:i + batch_size]
+                    batch_tasks = [loop.run_in_executor(executor, converse, row, session) for _, row in
+                                   batch.iterrows()]
+                    tasks.extend(batch_tasks)
 
-    result1, result2 = zip(*results)
-    df['Errors'] = result1
-    df['Justification'] = result2
+
+    tags_list, expl_list = zip(*results)
+    # print(tags_list)
+    # print(expl_list)
+
+    # Assign results to DataFrame
+    df['Errors'] = tags_list
+    df['Justification'] = expl_list
 
     return df
 
