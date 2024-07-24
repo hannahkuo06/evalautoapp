@@ -3,6 +3,8 @@ caching = true
 showSidebarNavigation = false
 
 [theme]
-primaryColor="#81B5A1"
+primaryColor="#293E40"
+secondaryBackgroundColor="#81B5A1"
 font="sans serif"
-base="dark"
+base="light"
+textColor="#293E40"
