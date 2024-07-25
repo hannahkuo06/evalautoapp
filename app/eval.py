@@ -107,32 +107,22 @@ async def converse(record, session):
     return tags, expl
 
 
-async def parallel_async(file_bytes, batch_size=10):
+async def parallel_async(file_bytes):
     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+    records = df.to_dict(orient='records')
 
     # results_list = []
     results = []
 
     async with aiohttp.ClientSession() as session:
-        loop = asyncio.get_event_loop()
-        # with ThreadPoolExecutor(max_workers=4) as executor:
-        #     # tasks = [converse(row, session) for _, row in df.iterrows()]
-        #     tasks = [loop.run_in_executor(executor, converse, row, session) for _, row in df.iterrows()]
-        #     results = await asyncio.gather(*tasks)
+        # loop = asyncio.get_event_loop()
         with ThreadPoolExecutor(max_workers=4) as executor:
-            tasks = []
-            for _, row in df.iterrows():
-                tasks = []
-                for i in range(0, len(df), batch_size):
-                    batch = df.iloc[i:i + batch_size]
-                    batch_tasks = [loop.run_in_executor(executor, converse, row, session) for _, row in
-                                   batch.iterrows()]
-                    tasks.extend(batch_tasks)
+            tasks = [converse(record, session) for record in records]
+            results = await asyncio.gather(*tasks)
 
+            # Unpack results
+            tags_list, expl_list = zip(*results) if results else ([], [])
 
-    tags_list, expl_list = zip(*results)
-    # print(tags_list)
-    # print(expl_list)
 
     # Assign results to DataFrame
     df['Errors'] = tags_list
