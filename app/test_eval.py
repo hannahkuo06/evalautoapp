@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-import app.eval
+import app.eval as eval
 
 
 def csv_to_bytes(file_path) -> bytes:
@@ -191,7 +191,7 @@ class TestParallelize(unittest.TestCase):
         self.assertNotIn('Justification', df.columns)
 
         file_bytes = csv_to_bytes('data/fake_data.csv')
-        df = eval.para_process(file_bytes)
+        df = eval.parallel_async(file_bytes)
         self.assertIn('Errors', df.columns)
         self.assertIn('Justification', df.columns)
 
