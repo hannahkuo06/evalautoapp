@@ -1,3 +1,4 @@
+import concurrent
 import functools
 from concurrent.futures import ThreadPoolExecutor
 
@@ -28,7 +29,7 @@ def get_negs(file, metrics):
 
 
 @functools.lru_cache(maxsize=None)
-def predict_openai(session, prompt, temperature=0, max_tokens=50, top_k=1):
+def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
         model="GPT4",  # model = "deployment_name"
@@ -58,8 +59,11 @@ def predict_openai(session, prompt, temperature=0, max_tokens=50, top_k=1):
     #     else:
     #         return f"Error: {response.status} - {await response.text()}"
 
+# async def async_predict_openai(prompt, executor):
+#     loop = asyncio.get_event_loop()
+#     return await loop.run_in_executor(executor, predict_openai, prompt)
 
-async def parse_taxonomy(session, q_type, check, generated_text, expected_text):
+async def parse_taxonomy(executor, q_type, check, generated_text, expected_text):
     errs = q_type, check
     with open('errors.json', 'r') as f:
         taxonomy = json.load(f)
@@ -77,7 +81,8 @@ async def parse_taxonomy(session, q_type, check, generated_text, expected_text):
                 f"Prompt: {err_info['_description']}, state why in max 2 sentences.\n"
                 f"Examples: {err_info['_examples']}\n"
             )
-            check_response = predict_openai(session, prompt)
+            check_response = predict_openai(prompt)
+            # check_response = async_predict_openai(prompt, executor)
             if 'Yes' in check_response:
                 err_lst.append(err_name)
                 explanations.append(check_response)
@@ -87,22 +92,24 @@ async def parse_taxonomy(session, q_type, check, generated_text, expected_text):
     return err_lst, explanations
 
 
-async def get_type(session, question):
+async def get_type(executor, question):
     type_q = f"What type of question is this? What type of answer is this question expecting? {question}"
-    type_a = predict_openai(session, type_q)
+    type_a = predict_openai(type_q)
+    # type_a = async_predict_openai(type_q, executor)
     return type_a
 
 
-async def check_type(session, gen_text, q_type):
+async def check_type(executor, gen_text, q_type):
     check_q = f"Is {gen_text} of the same type answer as stated in: {q_type}? State why."
-    check_a = predict_openai(session, check_q)
+    check_a = predict_openai(check_q)
+    # check_a = async_predict_openai(check_q, executor)
     return check_a
 
 
-async def converse(record, session):
-    q_type = await get_type(session, record['inputs_pretokenized'])
-    check = await check_type(session, record['generated_text'], q_type)
-    err_tuple = await parse_taxonomy(session, q_type, check, record['generated_text'], record['expected_text'])
+async def converse(record, executor):
+    q_type = await get_type(executor, record['inputs_pretokenized'])
+    check = await check_type(executor, record['generated_text'], q_type)
+    err_tuple = await parse_taxonomy(executor, q_type, check, record['generated_text'], record['expected_text'])
     tags, expl = err_tuple
     return tags, expl
 
@@ -114,14 +121,14 @@ async def parallel_async(file_bytes):
     # results_list = []
     results = []
 
-    async with aiohttp.ClientSession() as session:
-        # loop = asyncio.get_event_loop()
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            tasks = [converse(record, session) for record in records]
-            results = await asyncio.gather(*tasks)
+    # async with aiohttp.ClientSession() as session:
+    # loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        tasks = [converse(record, executor) for record in records]
+        results = await asyncio.gather(*tasks)
 
-            # Unpack results
-            tags_list, expl_list = zip(*results) if results else ([], [])
+    # Unpack results
+    tags_list, expl_list = zip(*results) if results else ([], [])
 
 
     # Assign results to DataFrame
@@ -129,6 +136,10 @@ async def parallel_async(file_bytes):
     df['Justification'] = expl_list
 
     return df
+
+# def run_parallel(file_bytes):
+#     loop = asyncio.get_event_loop()
+#     return loop.run_until_complete(parallel_async(file_bytes))
 
 
     # for result in results:
