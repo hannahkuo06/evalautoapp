@@ -10,7 +10,7 @@ st.markdown("#### Instructions")
 st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the processed csv")
 
 
-@st.cache_data
+# @st.cache_data
 def process(file):
     start_time = time.perf_counter()
 
@@ -30,7 +30,10 @@ def download_df(df, filename):
     return href
 
 
-uploaded_file = st.file_uploader("Choose a file", type=["csv"], accept_multiple_files=False)
+uploaded_file = st.file_uploader("Choose a file", type=["csv", "json"], accept_multiple_files=False)
+
+st.text_input("metric name")
+st.text_input("metric description")
 
 if st.button("Process") and uploaded_file is not None:
     with st.spinner("Processing your file..."):
@@ -38,4 +41,4 @@ if st.button("Process") and uploaded_file is not None:
     st.markdown("---")
     st.write("✅ Evaluation complete!")
     st.write("Hover over the below table, and the download icon will appear in the top right corner of the table.")
-    st.data_editor(df)
+    st.dataframe(df)
