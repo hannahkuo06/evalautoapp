@@ -1,5 +1,6 @@
 import asyncio
 
+import pandas as pd
 import streamlit as st
 import base64
 import time
@@ -7,7 +8,11 @@ from app.eval import parallel
 
 
 st.markdown("#### Instructions")
-st.markdown("1. Upload dataset CSV \n2. Click 'Process'\n3. View/Download the processed csv")
+st.markdown("""
+    1. Upload dataset CSV 
+    2. Click 'Process
+    3. View/Download the processed CSV
+            """)
 
 
 # @st.cache_data
@@ -32,8 +37,10 @@ def download_df(df, filename):
 
 uploaded_file = st.file_uploader("Choose a file", type=["csv", "json"], accept_multiple_files=False)
 
-st.text_input("metric name")
-st.text_input("metric description")
+# name = st.text_input("metric name")
+# description = st.text_input("metric description")
+# if st.button("Add Metric"):
+#     df = pd.DataFrame({name: description})
 
 if st.button("Process") and uploaded_file is not None:
     with st.spinner("Processing your file..."):
