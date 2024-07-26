@@ -2,8 +2,8 @@ import json
 import pandas as pd
 import streamlit as st
 
-input_df = pd.read_csv('data/fake_data.csv')
-output_df = pd.read_csv('data/example_fake_data_output.csv')
+input_df = pd.read_csv('test/data/fake_data.csv')
+output_df = pd.read_csv('test/data/example_fake_data_output.csv')
 
 with open('errors.json', 'r') as file:
     errors = json.load(file)
