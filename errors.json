@@ -49,15 +49,30 @@
           "_examples": [
             "junk code",
             "major calculation errors",
-            "token limit reached (incomplete answer)",
-            "no answer/blank",
-            "data type errors"
+            "no answer/blank"
           ]
         },
-        "Incorrect": {
+        "Incorrect Evaluation": {
           "_description": "Is the generated answer not the same as the expected answer?",
           "_examples": [
             "choosing incorrect multiple choice option"
+          ]
+        }
+      }
+    },
+    "Dataset": {
+      "_description": "Errors with expected text",
+      "errors": {
+        "Data type errors": {
+          "_description": "Are the data types of the generated text and expected text mismatched?",
+          "_examples": [
+            "B vs. 2 in a multiple choice question"
+          ]
+        },
+        "Token limit": {
+          "_description": "Was the generated answer cut off abruptly?",
+          "_examples": [
+            "stopping mid sentence"
           ]
         }
       }

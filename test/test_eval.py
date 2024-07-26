@@ -1,3 +1,4 @@
+import os
 import unittest
 import pandas as pd
 
@@ -191,10 +192,42 @@ class TestParallelize(unittest.TestCase):
         self.assertNotIn('Justification', df.columns)
 
         file_bytes = csv_to_bytes('data/fake_data.csv')
-        df = eval.parallel_async(file_bytes)
+        df = eval.parallel(file_bytes)
         self.assertIn('Errors', df.columns)
         self.assertIn('Justification', df.columns)
 
+class TestMetrics(unittest.TestCase):
+    def test_metrics_good(self):
+        df = pd.read_csv('data/fake_data.csv')
+        rec = df.iloc[0]
+
+        lst = ['exact_match', 'prefix_exact_match', 'quasi_exact_match', 'quasi_prefix_exact_match', 'contains_match']
+
+        check = eval.analyze_metrics(rec, lst)
+        print(check)
+        self.assertIn('GOOD', check[0])
+
+    def test_metrics_neg(self):
+        df = pd.read_csv('data/saq_10.csv')
+        rec = df.iloc[6]
+        print(rec)
+
+        lst = ['exact_match', 'prefix_exact_match', 'quasi_exact_match', 'quasi_prefix_exact_match', 'contains_match']
+
+        check = eval.analyze_metrics(rec, lst)
+        print(check)
+        self.assertIn('METRIC ERROR', check[0])
+
+    def test_metrics_error(self):
+        df = pd.read_csv('data/fake_data.csv')
+        rec = df.iloc[5]
+        # print(rec)
+
+        lst = ['exact_match', 'prefix_exact_match', 'quasi_exact_match', 'quasi_prefix_exact_match', 'contains_match']
+
+        check = eval.analyze_metrics(rec, lst)
+        print(check)
+        self.assertEqual(lst, check[0])
 
 
 if __name__ == '__main__':

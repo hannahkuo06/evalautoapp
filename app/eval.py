@@ -9,17 +9,18 @@ import aiohttp
 from io import BytesIO
 from openai import AzureOpenAI
 
-# client = AzureOpenAI(
-#     azure_endpoint="https://core-llm-1.openai.azure.com/",
-#     api_key="1456d60bb6864ed99bd5cc4858ed75a8",
-#     api_version="2024-02-15-preview",
-# )
-
 client = AzureOpenAI(
-    azure_endpoint="https://openai-spm.openai.azure.com/",
-    api_key="d474a9b11bcb4417b5cb830f5ba8acac",
-    api_version="2024-02-15-preview"
+    azure_endpoint="https://core-llm-1.openai.azure.com/",
+    api_key="1456d60bb6864ed99bd5cc4858ed75a8",
+    api_version="2024-02-15-preview",
 )
+
+
+# client = AzureOpenAI(
+#     azure_endpoint="https://openai-spm.openai.azure.com/",
+#     api_key="d474a9b11bcb4417b5cb830f5ba8acac",
+#     api_version="2024-02-15-preview"
+# )
 
 
 def get_negs(file, metrics):
@@ -34,7 +35,7 @@ def get_negs(file, metrics):
 def predict_openai(prompt, temperature=0, max_tokens=50, top_k=1):
     message_text = [{"role": "system", "content": prompt}]
     response = client.chat.completions.create(
-        model="gpt-4-turbo-preview",  # model = "deployment_name"
+        model="gpt4",  # model = "deployment_name"
         messages=message_text,
         temperature=temperature,
         max_tokens=max_tokens,
@@ -68,9 +69,51 @@ async def parse_taxonomy(q_type, check, generated_text, expected_text):
                 explanations.append(check_response)
 
     if not err_lst:
-        return 'GOOD', explanations
+        return ['GOOD'], explanations
     return err_lst, explanations
 
+
+def analyze_metrics(record, metrics_list):
+    with open('metrics.json', 'r') as f:
+        metrics = json.load(f)
+
+    incorrect_eval = []
+    expl = []
+
+    if record['generated_text'] != record['expected_text']:
+        prompt = ("Is the generated text part of expected text?"
+                  f"generated text: {record['generated_text']}"
+                  f"expected text: {record['expected_text']}")
+        check = predict_openai(prompt)
+        # print(check)
+
+        if check.__contains__('Yes'):
+            incorrect_eval.append('METRIC ERROR')
+            expl.append('Generated text contained in expected text')
+
+    for met_type, lst in metrics.items():
+        # print(met_type, lst)
+        for m in metrics_list:
+            if m in lst:
+                # print(record[m])
+                prompt = ("Analyze the model's metric assessment of this output:"
+                          f"metric: {m}"
+                          f"description: {lst[m]}"
+                          f"generated text: {record['generated_text']}"
+                          f"expected text: {record['expected_text']}"
+                          f"model's assessment: {record[m]}")
+
+                check = predict_openai(prompt)
+                # print(check)
+
+                if check.__contains__('incorrect'):
+                    incorrect_eval.append(m)
+                    expl.append(check)
+
+    if not incorrect_eval:
+        return ['GOOD'], expl
+
+    return incorrect_eval, expl
 
 async def get_type(question):
     type_q = f"What type of question is this? What type of answer is this question expecting? {question}"
@@ -85,11 +128,12 @@ async def check_type(gen_text, q_type):
 
 
 async def converse(record):
+    lst = ['exact_match', 'prefix_exact_match', 'quasi_exact_match', 'quasi_prefix_exact_match', 'contains_match']
     q_type = await get_type(record['inputs_pretokenized'])
     check = await check_type(record['generated_text'], q_type)
-    err_tuple = await parse_taxonomy(q_type, check, record['generated_text'], record['expected_text'])
-    tags, expl = err_tuple
-    return tags, expl
+    errs, err_expl = await parse_taxonomy(q_type, check, record['generated_text'], record['expected_text'])
+    met_evals, met_expl = analyze_metrics(record, lst)
+    return errs, err_expl, met_evals, met_expl
 
 
 async def process_batch(batch):
@@ -104,6 +148,8 @@ async def parallel(file_bytes, batch_size=50):
 
     errs = []
     expl = []
+    mets = []
+    met_expl = []
 
     for batch in batches:
         results = await process_batch(batch.to_dict(orient='records'))
@@ -111,8 +157,15 @@ async def parallel(file_bytes, batch_size=50):
         for result in results:
             errs.append(result[0])
             expl.append(result[1])
+            print(type(results[2]))
+            mets.append(result[2])
+            met_expl.append(result[3])
 
-    df['Errors'] = errs
-    df['Justification'] = expl
+    print(errs)
+    print(mets)
+    df['Error Analysis'] = errs
+    df['Error Analysis Justification'] = expl
+    df['Metric Analysis'] = mets
+    df['Metric Analysis Justification'] = met_expl
 
     return df

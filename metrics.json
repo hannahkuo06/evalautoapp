@@ -1,0 +1,9 @@
+{
+  "Standard": {
+    "exact_match": "exact match, does not ignore case or space",
+    "quasi_exact_match": "exact match after normalization",
+    "prefix_exact_match": "Only check if expected text is in the beginning",
+    "quasi_prefix_exact_match": "Only check if the normalized expected text is in the beginning",
+    "contains_match": "Check if the expected text is part of generated text."
+  }
+}
