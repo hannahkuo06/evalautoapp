@@ -37,6 +37,12 @@
             "date specificity",
             "lacking an article"
           ]
+        },
+        "Semantically Correct": {
+          "_description": "If the outputs don't match, is the generated text part of the expected text?",
+          "_examples": [
+            "expected text: John Smith, generated text: Smith"
+          ]
         }
       }
 
