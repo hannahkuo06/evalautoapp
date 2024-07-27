@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 import base64
 import time
-from app.eval import parallel
+from app.parallelize import run_parallelize
 
 
 st.markdown("#### Instructions")
@@ -20,7 +20,7 @@ def process(file):
     start_time = time.perf_counter()
 
     content_bytes = file.read()
-    result_df = asyncio.run(parallel(content_bytes))
+    result_df = asyncio.run(run_parallelize(content_bytes))
 
     end_time = time.perf_counter()
     st.write(f"Computation runtime: {end_time - start_time:.6f} seconds")
