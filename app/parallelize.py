@@ -65,9 +65,9 @@ async def execute(df, batch_size=10):
 
 
 # Define the main async function to run the processing
-async def run_parallelize(file_bytes):
-    metrics = ['exact_match', 'quasi_exact_match', 'prefix_exact_match', 'quasi_prefix_exact_match', 'contains_match']
-    df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-    df = get_negs(df, metrics)
-    df.reset_index()
+async def run_parallelize(df):
+    # metrics = ['exact_match', 'quasi_exact_match', 'prefix_exact_match', 'quasi_prefix_exact_match', 'contains_match']
+    # df = pd.read_csv(BytesIO(file_bytes), index_col=None)
+    # df = get_negs(df, metrics)
+    # df.reset_index()
     return await execute(df)

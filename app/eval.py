@@ -28,7 +28,14 @@ def get_negs(df, metrics):
     #     df = df[df[metric] == 0]
     # return df
 
-    mask = pd.concat([(df[metric] == 0) for metric in metrics], axis=1).all(axis=1)
+    # mask = pd.concat([(df[metric] == 0) for metric in metrics], axis=1).all(axis=1)
+    # return df[mask]
+
+    mask = pd.Series([True] * len(df))
+
+    for metric in metrics:
+        mask &= (df[metric] == 0)
+
     return df[mask]
 
 
@@ -81,17 +88,6 @@ async def analyze_metrics(record, metrics_list):
     incorrect_eval = []
     expl = []
 
-    # if record['generated_text'] != record['expected_text']:
-    #     prompt = ("Is the generated text part of expected text?"
-    #               f"generated text: {record['generated_text']}"
-    #               f"expected text: {record['expected_text']}")
-    #     check = predict_openai(prompt)
-    #     # print(check)
-    #
-    #     if check.__contains__('Yes'):
-    #         incorrect_eval.append('METRIC ERROR')
-    #         expl.append('Generated text contained in expected text')
-
     for met_type, lst in metrics.items():
         # print(met_type, lst)
         for m in metrics_list:
@@ -116,6 +112,7 @@ async def analyze_metrics(record, metrics_list):
 
     return incorrect_eval, expl
 
+
 async def get_type(question):
     type_q = f"What type of question is this? What type of answer is this question expecting? {question}"
     type_a = predict_openai(type_q)
@@ -133,68 +130,3 @@ async def converse(record):
     check = await check_type(record['generated_text'], q_type)
     errs, err_expl = await parse_taxonomy(q_type, check, record['generated_text'], record['expected_text'])
     return errs, err_expl
-
-    # loop = asyncio.get_event_loop()
-    #
-    # with ThreadPoolExecutor() as executor:
-    #     q_type = await loop.run_in_executor(executor, get_type, record['inputs_pretokenized'])
-    #     check = await loop.run_in_executor(executor, check_type, record['generated_text'], q_type)
-    #     errs, expl = await loop.run_in_executor(executor, parse_taxonomy, q_type, check, record['generated_text'], record['expected_text'])
-    #
-    # # Process and return results as a tuple
-    # return errs, expl
-
-# execute batch
-# async def process_record(record):
-#     lst = ['exact_match', 'prefix_exact_match', 'quasi_exact_match', 'quasi_prefix_exact_match', 'contains_match']
-#     metrics_task = asyncio.create_task(analyze_metrics(record, lst))
-#     # converse_task = asyncio.create_task(converse(record))
-#     type_task = asyncio.create_task(get_type())
-#
-#     metrics_result = await metrics_task
-#     converse_result = await converse_task
-#
-#     return metrics_result, converse_result
-
-
-# async def process_batch(batch):
-#     tasks = [process_record(row) for row in batch]
-#     results = await asyncio.gather(*tasks)
-#     return results
-#
-# # main basically
-# async def parallel(file_bytes, batch_size=10):
-#     df = pd.read_csv(BytesIO(file_bytes), index_col=None)
-#     batches = [df.iloc[i:i + batch_size] for i in range(0, len(df), batch_size)]
-
-    # errs = []
-    # expl = []
-    # mets = []
-    # met_expl = []
-
-
-
-    # thread pool
-        # batch function
-            # for loop (call for each of the 10 recs)
-
-
-
-    # for batch in batches:
-    #     results = await process_batch(batch.to_dict(orient='records'))
-    #
-    #     for result in results:
-    #         errs.append(result[0])
-    #         expl.append(result[1])
-    #         print(type(results[2]))
-    #         mets.append(result[2])
-    #         met_expl.append(result[3])
-    #
-    # print(errs)
-    # print(mets)
-    # df['Error Analysis'] = errs
-    # df['Error Analysis Justification'] = expl
-    # df['Metric Analysis'] = mets
-    # df['Metric Analysis Justification'] = met_expl
-
-    # return df
