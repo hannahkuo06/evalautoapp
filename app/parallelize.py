@@ -3,14 +3,14 @@ from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 import pandas as pd
 
-from .eval import converse, get_negs
+from .eval import converse, get_negs, analyze_metrics
 
 
 # Define the async function to process a batch of records
 async def process_batch(batch, executor):
     results = []
     loop = asyncio.get_event_loop()
-    # metrics = ['exact_match', 'quasi_exact_match', 'prefix_exact_match', 'quasi_prefix_exact_match', 'contains_match']
+    metrics = ['exact_match', 'quasi_exact_match', 'prefix_exact_match', 'quasi_prefix_exact_match', 'contains_match']
     # print(batch)
     # print(type(batch))
 
@@ -18,14 +18,14 @@ async def process_batch(batch, executor):
         # print(record)
         # Await the result from the coroutine
         # analyze_result = await loop.run_in_executor(executor, lambda r: asyncio.run(analyze_metrics(r)), record)
-        converse_result = await loop.run_in_executor(executor, lambda r: asyncio.run(converse(r)), record)
-        # analyze_result, converse_result = await asyncio.gather(
-        #     analyze_metrics(record, metrics),
-        #     converse(record)
-        # )
+        # converse_result = await loop.run_in_executor(executor, lambda r: asyncio.run(converse(r)), record)
+        analyze_result, converse_result = await asyncio.gather(
+            analyze_metrics(record, metrics),
+            converse(record)
+        )
 
-        # results.append((analyze_result, converse_result))
-        results.append(converse_result)
+        results.append((analyze_result, converse_result))
+        # results.append(converse_result)
 
     return results
 

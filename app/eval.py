@@ -74,47 +74,47 @@ async def parse_taxonomy(q_type, check, generated_text, expected_text):
     return err_lst, explanations
 
 
-# async def analyze_metrics(record, metrics_list):
-#     with open('metrics.json', 'r') as f:
-#         metrics = json.load(f)
-#
-#     incorrect_eval = []
-#     expl = []
-#
-#     # if record['generated_text'] != record['expected_text']:
-#     #     prompt = ("Is the generated text part of expected text?"
-#     #               f"generated text: {record['generated_text']}"
-#     #               f"expected text: {record['expected_text']}")
-#     #     check = predict_openai(prompt)
-#     #     # print(check)
-#     #
-#     #     if check.__contains__('Yes'):
-#     #         incorrect_eval.append('METRIC ERROR')
-#     #         expl.append('Generated text contained in expected text')
-#
-#     for met_type, lst in metrics.items():
-#         # print(met_type, lst)
-#         for m in metrics_list:
-#             if m in lst:
-#                 # print(record[m])
-#                 prompt = ("Analyze the model's metric assessment of this output:"
-#                           f"metric: {m}"
-#                           f"description: {lst[m]}"
-#                           f"generated text: {record['generated_text']}"
-#                           f"expected text: {record['expected_text']}"
-#                           f"model's assessment: {record[m]}")
-#
-#                 check = predict_openai(prompt)
-#                 # print(check)
-#
-#                 if check.__contains__('incorrect'):
-#                     incorrect_eval.append(m)
-#                     expl.append(check)
-#
-#     if not incorrect_eval:
-#         return ['GOOD'], expl
-#
-#     return incorrect_eval, expl
+async def analyze_metrics(record, metrics_list):
+    with open('metrics.json', 'r') as f:
+        metrics = json.load(f)
+
+    incorrect_eval = []
+    expl = []
+
+    # if record['generated_text'] != record['expected_text']:
+    #     prompt = ("Is the generated text part of expected text?"
+    #               f"generated text: {record['generated_text']}"
+    #               f"expected text: {record['expected_text']}")
+    #     check = predict_openai(prompt)
+    #     # print(check)
+    #
+    #     if check.__contains__('Yes'):
+    #         incorrect_eval.append('METRIC ERROR')
+    #         expl.append('Generated text contained in expected text')
+
+    for met_type, lst in metrics.items():
+        # print(met_type, lst)
+        for m in metrics_list:
+            if m in lst:
+                # print(record[m])
+                prompt = ("Analyze the model's metric assessment of this output:"
+                          f"metric: {m}"
+                          f"description: {lst[m]}"
+                          f"generated text: {record['generated_text']}"
+                          f"expected text: {record['expected_text']}"
+                          f"model's assessment: {record[m]}")
+
+                check = predict_openai(prompt)
+                # print(check)
+
+                if check.__contains__('incorrect'):
+                    incorrect_eval.append(m)
+                    expl.append(check)
+
+    if not incorrect_eval:
+        return ['GOOD'], expl
+
+    return incorrect_eval, expl
 
 async def get_type(question):
     type_q = f"What type of question is this? What type of answer is this question expecting? {question}"
