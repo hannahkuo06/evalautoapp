@@ -1,5 +1,6 @@
 import os
 import unittest
+import time
 import pandas as pd
 
 import app.eval as eval
@@ -25,6 +26,18 @@ class TestEvalBasic(unittest.TestCase):
         negs = eval.get_negs('data/mcq_10.csv', metrics)
         first = negs.iloc[0]
         self.assertEqual(first["id"], 4)
+
+    def test_negs(self):
+        start_time = time.perf_counter()
+        metrics = ['exact_match', 'quasi_exact_match', 'prefix_exact_match', 'quasi_prefix_exact_match',
+                   'contains_match']
+
+        df = pd.read_csv('data/mcq_10.csv')
+        df = eval.get_negs(df, metrics)
+        end_time = time.perf_counter()
+        print("Computation runtime: ", end_time-start_time)
+        print(df)
+        self.assertTrue(len(df) == 1)
 
 
 class TestGetType(unittest.TestCase):
