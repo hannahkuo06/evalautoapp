@@ -1,12 +1,7 @@
-import concurrent
 import functools
-from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 import json
-import asyncio
-import aiohttp
-from io import BytesIO
 from openai import AzureOpenAI
 
 client = AzureOpenAI(
@@ -24,13 +19,6 @@ client = AzureOpenAI(
 
 
 def get_negs(df, metrics):
-    # for metric in metrics:
-    #     df = df[df[metric] == 0]
-    # return df
-
-    # mask = pd.concat([(df[metric] == 0) for metric in metrics], axis=1).all(axis=1)
-    # return df[mask]
-
     mask = pd.Series([True] * len(df))
 
     for metric in metrics:
@@ -89,10 +77,8 @@ async def analyze_metrics(record, metrics_list):
     expl = []
 
     for met_type, lst in metrics.items():
-        # print(met_type, lst)
         for m in metrics_list:
             if m in lst:
-                # print(record[m])
                 prompt = ("Analyze the model's metric assessment of this output:"
                           f"metric: {m}"
                           f"description: {lst[m]}"
@@ -101,7 +87,6 @@ async def analyze_metrics(record, metrics_list):
                           f"model's assessment: {record[m]}")
 
                 check = predict_openai(prompt)
-                # print(check)
 
                 if check.__contains__('incorrect'):
                     incorrect_eval.append(m)
